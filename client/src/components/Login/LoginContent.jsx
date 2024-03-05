@@ -43,8 +43,7 @@ const LoginContent = (props) => {
             </Button>
           </div>,
         ]}
-      >
-      </Drawer>
+      ></Drawer>
     </Box>
   );
 };

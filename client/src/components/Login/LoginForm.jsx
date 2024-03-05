@@ -10,9 +10,10 @@ const { Title } = Typography;
 
 const LoginForm = (props) => {
   const classes = useStyles();
-
+  const history = useNavigate();
   const onFinish = async (values) => {
-   console.log('Logged In...')
+    console.log("Logged In...");
+    history("/dashboard");
   };
   const onFinishFailed = async (error) => {
     console.log("Failed:", error);
