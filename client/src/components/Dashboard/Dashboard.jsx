@@ -18,7 +18,11 @@ import {
 import "./style.css";
 import "antd/dist/antd.min.css";
 import Dashboard from "./DashboardPage/Dashboard";
-// import { Drawer, Space, message } from "antd";
+import Reports from "./DashboardPage/Reports";
+import Accounts from "./DashboardPage/Accounts";
+import Settings from "./DashboardPage/Settings";
+import { Drawer, Space, message } from "antd";
+import AttendanceDashboard from "../Attendance/AttendanceDashboard";
 
 const HomeDashboard = () => {
   const history = useNavigate();
@@ -60,104 +64,80 @@ const HomeDashboard = () => {
                 <span>Dashboard</span>
               </a>
             </li>
-            {/* <li key="li2">
+            <li key="li2">
               <a
                 key={2}
                 className={currentActive === 2 ? "active" : "none"}
-                onClick={() => (
-                  setCurrentActive(2)
-                )}
-              >
-                <FileProtectOutlined />
-                <span className="las la-users"></span>
-                <span>Available Books</span>
-              </a>
-            </li>
-            <li key="li3">
-              <a
-                key={3}
-                className={currentActive === 3 ? "active" : "none"}
-                onClick={() => (
-                  setCurrentActive(3)
-                )}
-              >
-                <BookOutlined />
-                <span className="las la-clipboard-list"></span>
-                <span>Borrowed Books</span>
-              </a>
-            </li>
-            <li key="li4">
-              <a
-                key={4}
-                className={currentActive === 4 ? "active" : "none"}
-                onClick={() => (
-                  setCurrentActive(4)
-                )}
-              >
-                <ReadOutlined />
-                <span className="las la-clipboard-list"></span>
-                <span>Shelf</span>
-              </a>
-            </li> */}
-            {/* <li key="li5">
-              <a
-                key={5}
-                className={currentActive === 5 ? "active" : "none"}
-                onClick={() => (
-                  setCurrentActive(5)
-                )}
-              >
-                <FileDoneOutlined />
-                <span className="las la-clipboard-list"></span>
-                <span>Catalog</span>
-              </a>
-            </li> */}
-            <li key="li6">
-              <a
-                key={6}
-                className={currentActive === 6 ? "active" : "none"}
-                onClick={() => setCurrentActive(6)}
+                onClick={() => setCurrentActive(2)}
               >
                 <BarChartOutlined />
                 <span className="las la-clipboard-list"></span>
                 <span>Reports</span>
               </a>
             </li>
-            <li key="li7">
+            <li key="li3">
               <a
-                key={7}
-                className={currentActive === 7 ? "active" : "none"}
-                onClick={() => setCurrentActive(7)}
+                key={3}
+                className={currentActive === 3 ? "active" : "none"}
+                onClick={() => setCurrentActive(3)}
               >
                 <UserOutlined />
                 <span className="las la-clipboard-list"></span>
                 <span>Accounts</span>
               </a>
             </li>
-            <li key="li8">
+            <li key="li4">
               <a
-                key={8}
-                className={currentActive === 8 ? "active" : "none"}
-                onClick={() => setCurrentActive(8)}
+                key={4}
+                className={currentActive === 4 ? "active" : "none"}
+                onClick={() => setCurrentActive(4)}
               >
                 <SettingOutlined />
                 <span className="las la-clipboard-list"></span>
                 <span>Settings</span>
               </a>
             </li>
-            <li key="li9">
-              <a key={9} onClick={() => setCurrentActive(9)}>
+            <li key="li5">
+              <a key={5} onClick={() => setCurrentActive(5)}>
                 <ScheduleOutlined />
                 <span className="las la-clipboard-list"></span>
-                <span>Attendance Dashboard</span>
+                <span>Facial Recognition</span>
               </a>
             </li>
           </ul>
         </div>
       </div>
       <div className="main-content">
-        <Dashboard />
+        {currentActive === 1 ? (
+          <>
+            <Dashboard />
+          </>
+        ): currentActive === 2 ? (
+          <>
+            <Reports />
+          </>
+        ): currentActive === 3 ? (
+          <>
+            <Accounts />
+          </>
+        ): currentActive === 4 ? (
+          <>
+            <Settings />
+          </>
+        ): null}
       </div>
+      <Drawer
+        title="FACIAL RECOGNITION"
+        placement="left"
+        onClose={() => setCurrentActive(1)}
+        open={currentActive === 5 ? true : false}
+        height="100vh"
+        width="100%"
+        style={{ display: "flex", justifyContent: "center" }}
+        extra={<Space></Space>}
+      >
+        <AttendanceDashboard />
+      </Drawer>
     </>
   );
 };

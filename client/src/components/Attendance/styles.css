@@ -1,0 +1,96 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  list-style-type: none;
+  text-decoration: none;
+  font-family: "Poppins", sans-serif;
+}
+
+.ant-divider-horizontal.ant-divider-with-text-center::before,
+.ant-divider-horizontal.ant-divider-with-text-center::after {
+  border-top: 1px solid #ffbf00fd !important;
+}
+
+.attendance-header {
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  left: 345px;
+  width: 100% !important;
+  top: 0;
+  z-index: 100;
+  transition: left 300ms;
+}
+
+header h2 {
+  color: #222;
+}
+header label span {
+  font-size: 1.7rem;
+  padding-right: 1rem;
+}
+
+main {
+  margin-top: 85px;
+  padding: 2rem 1.5rem;
+  background: #f1f5f9;
+  min-height: calc(100vh - 90px);
+}
+
+.ant-page-header {
+  padding: 0px 24px !important;
+}
+
+.marquee {
+  width: 100%;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 20px 0;
+  background-color: #ffbf00fd;
+}
+
+.marquee span {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 100%;
+  will-change: transform;
+  font-size: 14px;
+  /* show the marquee just outside the paragraph */
+  animation: marquee 40s linear infinite;
+}
+
+.marquee span:hover {
+  animation-play-state: paused;
+}
+
+/* Make it move */
+
+@keyframes marquee {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-100%, 0);
+  }
+}
+
+/* Respect user preferences about animations */
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    white-space: normal;
+  }
+  .marquee span {
+    animation: none;
+    padding-left: 0;
+  }
+}
