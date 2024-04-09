@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState, useRef } from "react";
 import useStyles from "./style";
 import { Box } from "@mui/material";
 import {
@@ -9,8 +10,10 @@ import {
   Input,
   Image,
   Divider,
+  Button,
+  message,
 } from "antd";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import * as faceapi from "face-api.js";
 import {
   UserOutlined,
   InfoCircleOutlined,
@@ -30,6 +33,187 @@ const AttendanceDashboard = () => {
   const [totalStudents, seTotalStudents] = useState("");
   const [totalTimeIn, setTotalTimeIn] = useState("");
   const [totalTimeOut, setTotalTimeOut] = useState("");
+  const [labels, setLabels] = useState();
+  const [attendanceStatus, setAttendanceStatus] = useState("");
+  const [timeInDisabled, setTimeInDisabled] = useState(false);
+  const [timeOutDisabled, setTimeOutDisabled] = useState(false);
+  const [attendanceData, setAttendanceData] = useState("");
+
+  const videoRef = useRef();
+  // const canvasRef = useRef();
+  useEffect(() => {
+    getEmployeeId();
+    setTimeout(() => {
+      startWebcam();
+      videoRef && loadModels();
+    }, 2000);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const getEmployeeId = async () => {
+    const res = await fetch('/api/get-employeeId', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await res.json();
+    if(data.status === 200) {
+      setLabels(data.body);
+    }
+  };
+
+  const onProcessAttendance = async (employeeId, attendanceStats) => {
+    console.log(attendanceStats)
+    const request = { employeeId: employeeId, status: attendanceStats };
+
+    const data = await fetch('/api/add/attendance', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
+
+    const res = await data.json();
+
+    if (res.status === 201) {
+      message.success('Attendance Successfully Added!')
+      setAttendanceData(res.body);
+      setTimeout(() => {
+        setAttendanceData();
+      }, 3000);
+    } else {
+      message.error('Something went wrong, please contact the HR or Tech Support!')
+    }
+  }
+
+  const onClickTimeIn = () => {
+    setAttendanceStatus('TIME-IN');
+    onPlayVideo();
+    setTimeOutDisabled(true);
+  }
+
+  const onClickTimeOut = () => {
+    setAttendanceStatus('TIME-OUT');
+    onPlayVideo();
+    setTimeInDisabled(true);
+  }
+
+  const loadModels = () => {
+    Promise.all([
+      faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
+      faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+    ]).then(startWebcam);
+  };
+
+  function startWebcam() {
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+        audio: false,
+      })
+      .then((stream) => {
+        videoRef.current.srcObject = stream;
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  function stopWebcam() {
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+        audio: false,
+      })
+      .then((stream) => {
+        stream.getVideoTracks().forEach((track) => {
+          track.stop();
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  function getLabeledFaceDescriptions() {
+    // const labels = ["Kenneth", "Felipe"];
+    return Promise.all(
+      labels.map(async (label) => {
+        console.log(label)
+        const descriptions = [];
+        for (let i = 1; i <= 2; i++) {
+          const img = await faceapi.fetchImage(`/labels/${label.employeeId}/${i}.png`);
+          const detections = await faceapi
+            .detectSingleFace(img)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+          descriptions.push(detections.descriptor);
+        }
+        return new faceapi.LabeledFaceDescriptors(label.employeeId, descriptions);
+      })
+    );
+  }
+
+  const onPlayVideo = async () => {
+
+      setTimeout(async () => {
+        const labeledFaceDescriptors = await getLabeledFaceDescriptions();
+        const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+
+        const canvas = faceapi.createCanvasFromMedia(videoRef.current);
+        document.getElementById("scanner").append(canvas);
+
+        faceapi.matchDimensions(canvas, {
+          width: 940,
+          height: 650,
+        });
+        // setInterval(async () => {
+          const detections = await faceapi
+            .detectAllFaces(videoRef.current)
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+
+          const resizedDetections = faceapi.resizeResults(detections, {
+            width: 940,
+            height: 650,
+          });
+
+          canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+
+          const results = resizedDetections.map((d) => {
+            return faceMatcher.findBestMatch(d.descriptor);
+          });
+          results.forEach((result, i) => {
+            console.log(result.label);
+            const box = resizedDetections[i].detection.box;
+            const drawBox = new faceapi.draw.DrawBox(box, {
+              label: result,
+            });
+            // drawBox.draw(canvas);
+            if (result.label !== 'unknown') {
+              console.log(attendanceStatus)
+              onProcessAttendance(result.label, attendanceStatus);
+              setTimeout(() => {
+              // setAttendanceStatus();
+              setTimeInDisabled(false);
+              setTimeOutDisabled(false);
+              }, 3000);
+            } else {
+              message.error('Please try again and make sure to face in front of the camera!')
+              // setAttendanceStatus();
+              setTimeInDisabled(false);
+              setTimeOutDisabled(false);
+            }
+          });
+        // }, 10000);
+      }, 2000);
+  };
+
 
   const updateTime = () => {
     time = new Date().toLocaleTimeString();
@@ -39,37 +223,9 @@ const AttendanceDashboard = () => {
   };
 
   setInterval(updateTime, 1000);
-
-  useEffect(() => {
-    const scanner = new Html5QrcodeScanner("reader-library", {
-      qrbox: {
-        width: 250,
-        height: 250,
-      },
-      fps: 5,
-    });
-
-    scanner.render(successReadLibraryCard, errorReadLibraryCard);
-
-    function successReadLibraryCard(result) {
-      scanner.pause();
-      setTimeout(() => {
-        scanner.resume();
-        // setStudentInfo("");
-        // setViewDeatailsImg();
-        // getAttendaceAnalytics();
-      }, 5000);
-      // setScannerOpen(false);
-      // setEnableBookScanBtn(false);
-      // fetchStudentData(result);
-    }
-
-    function errorReadLibraryCard(error) {
-      // scanner.clear();
-      // console.error(error);
-    }
-  }, []);
-
+  let employeeName = attendanceData
+  ? `${attendanceData?.lastName}, ${attendanceData?.firstName} ${attendanceData.middleName}`
+  : "";
   return (
     <Box className={classes.attendanceContainer}>
       <PageHeader
@@ -107,7 +263,7 @@ const AttendanceDashboard = () => {
               <Row gutter={12}>
                 <Col xs={{ span: 24 }} md={{ span: 24 }} layout="vertical">
                   <Input
-                    // value={studName}
+                    value={employeeName}
                     prefix={<UserOutlined style={{ marginRight: "10px" }} />}
                     placeholder="Employee Name"
                     style={{ borderRadius: "10px", marginTop: "15px" }}
@@ -116,7 +272,7 @@ const AttendanceDashboard = () => {
                 </Col>
                 <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
                   <Input
-                    // value={studentInfo?.studentId}
+                    value={attendanceData?.employeeId}
                     prefix={<UserOutlined style={{ marginRight: "10px" }} />}
                     placeholder="Employee ID"
                     style={{ borderRadius: "10px", marginTop: "15px" }}
@@ -125,7 +281,7 @@ const AttendanceDashboard = () => {
                 </Col>
                 <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
                   <Input
-                    // value={studentInfo?.email}
+                    value={attendanceData?.email}
                     prefix={<MailOutlined style={{ marginRight: "10px" }} />}
                     placeholder="Email Address"
                     style={{ borderRadius: "10px", marginTop: "15px" }}
@@ -134,7 +290,7 @@ const AttendanceDashboard = () => {
                 </Col>
                 <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
                   <Input
-                    // value={studentInfo?.grade}
+                    value={attendanceData?.department}
                     prefix={
                       <InfoCircleOutlined style={{ marginRight: "10px" }} />
                     }
@@ -145,7 +301,7 @@ const AttendanceDashboard = () => {
                 </Col>
                 <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
                   <Input
-                    // value={studentInfo?.section}
+                    value={attendanceData?.role}
                     prefix={
                       <InfoCircleOutlined style={{ marginRight: "10px" }} />
                     }
@@ -153,6 +309,18 @@ const AttendanceDashboard = () => {
                     style={{ borderRadius: "10px", marginTop: "15px" }}
                     readOnly
                   />
+                </Col>
+
+                <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '20px'}}>
+                <Button type="primary" style={{ width: '150px'}} onClick={() => onClickTimeIn()} disabled={timeInDisabled}>TIME-IN</Button>
+                </div>
+
+                </Col>
+                <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '20px'}}>
+                <Button type="primary" style={{ width: '150px'}} onClick={() => onClickTimeOut()} disabled={timeOutDisabled}>TIME-OUT</Button>
+                </div>
                 </Col>
                 {viewDeatailsImg ? (
                   <>
@@ -242,11 +410,14 @@ const AttendanceDashboard = () => {
               ) : null}
             </Col>
           </Descriptions.Item>
-          <Descriptions.Item label="FACIAL SCANNER">
-            <div
-              id="reader-library"
-              style={{ height: 500, width: 600, margin: 20 }}
-            ></div>
+          <Descriptions.Item label="SCANNER">
+            <div className="display-flex justify-content-center" id="scanner">
+              <video
+                crossOrigin="anonymous"
+                ref={videoRef}
+                autoPlay
+              ></video>
+            </div>
           </Descriptions.Item>
         </Descriptions>
       </PageHeader>

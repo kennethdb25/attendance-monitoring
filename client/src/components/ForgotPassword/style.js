@@ -12,7 +12,7 @@ const useStyles = makeStyles(() => ({
     alignItems: "center",
 
     [theme.breakpoints.up("md")]: {
-      paddingRight: "75px",
+      // paddingRight: "75px",
       justifyContent: "center",
     },
     [theme.breakpoints.down("md")]: {

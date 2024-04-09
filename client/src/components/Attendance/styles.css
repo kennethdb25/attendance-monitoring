@@ -9,9 +9,27 @@
   font-family: "Poppins", sans-serif;
 }
 
+.display-flex {
+  display: flex;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+canvas {
+  position: absolute;
+  margin-top: -90px;
+}
+
+.appvide {
+  display: flex;
+  align-items: center;
+}
+
 .ant-divider-horizontal.ant-divider-with-text-center::before,
 .ant-divider-horizontal.ant-divider-with-text-center::after {
-  border-top: 1px solid #ffbf00fd !important;
+  border-top: 1px solid #76b5c5 !important;
 }
 
 .attendance-header {

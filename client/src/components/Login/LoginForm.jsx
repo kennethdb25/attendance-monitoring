@@ -8,12 +8,34 @@ import "antd/dist/antd.min.css";
 
 const { Title } = Typography;
 
-const LoginForm = (props) => {
+const LoginForm = () => {
   const classes = useStyles();
   const history = useNavigate();
+
   const onFinish = async (values) => {
-    console.log("Logged In...");
-    history("/dashboard");
+    const data = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+
+    const res = await data.json();
+    if (res.status === 201) {
+      message.success("Logged In");
+      setTimeout(() => {
+        let arry = res.result.userEmail.tokens;
+        let lastElement = arry[arry.length - 1];
+        localStorage.setItem("adminToken", lastElement.token);
+        window.location.reload();
+        setTimeout(() => {
+          history("/dashboard");
+        }, 1000);
+      }, 3000);
+    } else {
+      message.error(res.message);
+    }
   };
   const onFinishFailed = async (error) => {
     console.log("Failed:", error);

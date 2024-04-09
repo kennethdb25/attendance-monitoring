@@ -225,6 +225,7 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 40px;
 }
 .card-header button {
   background: var(--main-color);
@@ -442,7 +443,7 @@ td .status {
 .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active,
 .ant-tabs-card > div > .ant-tabs-nav .ant-tabs-tab-active {
   /* color: #1890ff; */
-  background: #ffc000 !important;
+  background: #76b5c5 !important;
 }
 
 /* table header css */
@@ -451,8 +452,8 @@ td .status {
   color: rgb(255 255 255) !important;
   font-weight: 500 !important;
   text-align: left !important;
-  background: #ffc000 !important;
-  border-bottom: 1px solid #dfa145 !important;
+  background: #76b5c5 !important;
+  border-bottom: 1px solid #76b5c5 !important;
   transition: background 0.3s ease !important;
 }
 /* button add to shelf */
@@ -482,7 +483,7 @@ td .status {
 }
 .ant-modal-header {
   color: rgb(255 255 255) !important;
-  background: #ffc000 !important;
+  background: #76b5c5 !important;
 }
 
 .ant-table-filter-trigger {
@@ -504,12 +505,12 @@ td .status {
 /* pagination styling */
 .ant-pagination-item-active a {
   color: #ffffff !important;
-  background: #ffc000 !important;
+  background: #76b5c5 !important;
 }
 .ant-pagination-item-active {
   font-weight: 500 !important;
   background: #fff !important;
-  border-color: #efb300 !important;
+  border-color: #76b5c5 !important;
 }
 
 .ant-table {

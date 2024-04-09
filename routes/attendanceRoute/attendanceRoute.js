@@ -1,9 +1,9 @@
-const express = require("express");
+const express = require('express');
 const AttendanceRouter = new express.Router();
-const EmployeeModel = require("../../models/employeeModel");
-const AttendanceModel = require("../../models/attendanceModel");
+const EmployeeModel = require('../../models/employeeModel');
+const AttendanceModel = require('../../models/attendanceModel');
 
-AttendanceRouter.post("/api/add/attendance", async (req, res) => {
+AttendanceRouter.post('/api/add/attendance', async (req, res) => {
   const { employeeId, status } = req.body;
   const today = new Date();
 
@@ -12,7 +12,7 @@ AttendanceRouter.post("/api/add/attendance", async (req, res) => {
   });
 
   if (!getEmployeeData) {
-    return res.status(404).json({ error: "Employee Data Not Found" });
+    return res.status(404).json({ error: 'Employee Data Not Found' });
   }
 
   try {
@@ -23,7 +23,7 @@ AttendanceRouter.post("/api/add/attendance", async (req, res) => {
       lastName: getEmployeeData.lastName,
       status,
       created: today.toISOString(),
-      month: today.toLocaleString("default", { month: "long" }),
+      month: today.toLocaleString('default', { month: 'long' }),
       year: today.getFullYear().toString(),
       role: getEmployeeData.role,
       department: getEmployeeData.department,
@@ -32,14 +32,14 @@ AttendanceRouter.post("/api/add/attendance", async (req, res) => {
 
     const storeData = await finalUser.save();
 
-    return res.status(201).json(storeData);
+    return res.status(201).json({ status: 201, body: storeData });
   } catch (error) {
     console.log(error);
     return res.status(422).json(error);
   }
 });
 
-AttendanceRouter.get("/api/get-all-attendance", async (req, res) => {
+AttendanceRouter.get('/api/get-all-attendance', async (req, res) => {
   try {
     const getAllAttendance = await AttendanceModel.find().sort({ created: -1 });
     return res.status(201).json({ status: 200, body: getAllAttendance });
