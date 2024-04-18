@@ -52,24 +52,24 @@ const AttendanceDashboard = () => {
   }, []);
 
   const getEmployeeId = async () => {
-    const res = await fetch('/api/get-employeeId', {
-      method: 'GET',
+    const res = await fetch("/api/get-employeeId", {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
 
     const data = await res.json();
-    if(data.status === 200) {
+    if (data.status === 200) {
       setLabels(data.body);
     }
   };
 
   const onProcessAttendance = async (employeeId, attendanceStats) => {
-    console.log(attendanceStats)
+    console.log(attendanceStats);
     const request = { employeeId: employeeId, status: attendanceStats };
 
-    const data = await fetch('/api/add/attendance', {
+    const data = await fetch("/api/add/attendance", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,27 +80,29 @@ const AttendanceDashboard = () => {
     const res = await data.json();
 
     if (res.status === 201) {
-      message.success('Attendance Successfully Added!')
+      message.success("Attendance Successfully Added!");
       setAttendanceData(res.body);
       setTimeout(() => {
         setAttendanceData();
       }, 3000);
     } else {
-      message.error('Something went wrong, please contact the HR or Tech Support!')
+      message.error(
+        "Something went wrong, please contact the HR or Tech Support!"
+      );
     }
-  }
+  };
 
   const onClickTimeIn = () => {
-    setAttendanceStatus('TIME-IN');
+    setAttendanceStatus("TIME-IN");
     onPlayVideo();
     setTimeOutDisabled(true);
-  }
+  };
 
   const onClickTimeOut = () => {
-    setAttendanceStatus('TIME-OUT');
+    setAttendanceStatus("TIME-OUT");
     onPlayVideo();
     setTimeInDisabled(true);
-  }
+  };
 
   const loadModels = () => {
     Promise.all([
@@ -144,76 +146,81 @@ const AttendanceDashboard = () => {
     // const labels = ["Kenneth", "Felipe"];
     return Promise.all(
       labels.map(async (label) => {
-        console.log(label)
+        console.log(label);
         const descriptions = [];
         for (let i = 1; i <= 2; i++) {
-          const img = await faceapi.fetchImage(`/labels/${label.employeeId}/${i}.png`);
+          const img = await faceapi.fetchImage(
+            `/labels/${label.employeeId}/${i}.png`
+          );
           const detections = await faceapi
             .detectSingleFace(img)
             .withFaceLandmarks()
             .withFaceDescriptor();
           descriptions.push(detections.descriptor);
         }
-        return new faceapi.LabeledFaceDescriptors(label.employeeId, descriptions);
+        return new faceapi.LabeledFaceDescriptors(
+          label.employeeId,
+          descriptions
+        );
       })
     );
   }
 
   const onPlayVideo = async () => {
+    setTimeout(async () => {
+      const labeledFaceDescriptors = await getLabeledFaceDescriptions();
+      const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
 
-      setTimeout(async () => {
-        const labeledFaceDescriptors = await getLabeledFaceDescriptions();
-        const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+      const canvas = faceapi.createCanvasFromMedia(videoRef.current);
+      document.getElementById("scanner").append(canvas);
 
-        const canvas = faceapi.createCanvasFromMedia(videoRef.current);
-        document.getElementById("scanner").append(canvas);
+      faceapi.matchDimensions(canvas, {
+        width: 940,
+        height: 650,
+      });
+      // setInterval(async () => {
+      const detections = await faceapi
+        .detectAllFaces(videoRef.current)
+        .withFaceLandmarks()
+        .withFaceDescriptors();
 
-        faceapi.matchDimensions(canvas, {
-          width: 940,
-          height: 650,
+      const resizedDetections = faceapi.resizeResults(detections, {
+        width: 940,
+        height: 650,
+      });
+
+      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+
+      const results = resizedDetections.map((d) => {
+        return faceMatcher.findBestMatch(d.descriptor);
+      });
+      results.forEach((result, i) => {
+        console.log(result.label);
+        const box = resizedDetections[i].detection.box;
+        const drawBox = new faceapi.draw.DrawBox(box, {
+          label: result,
         });
-        // setInterval(async () => {
-          const detections = await faceapi
-            .detectAllFaces(videoRef.current)
-            .withFaceLandmarks()
-            .withFaceDescriptors();
-
-          const resizedDetections = faceapi.resizeResults(detections, {
-            width: 940,
-            height: 650,
-          });
-
-          canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-
-          const results = resizedDetections.map((d) => {
-            return faceMatcher.findBestMatch(d.descriptor);
-          });
-          results.forEach((result, i) => {
-            console.log(result.label);
-            const box = resizedDetections[i].detection.box;
-            const drawBox = new faceapi.draw.DrawBox(box, {
-              label: result,
-            });
-            // drawBox.draw(canvas);
-            if (result.label !== 'unknown') {
-              console.log(attendanceStatus)
-              onProcessAttendance(result.label, attendanceStatus);
-              setTimeout(() => {
-              // setAttendanceStatus();
-              setTimeInDisabled(false);
-              setTimeOutDisabled(false);
-              }, 3000);
-            } else {
-              message.error('Please try again and make sure to face in front of the camera!')
-              // setAttendanceStatus();
-              setTimeInDisabled(false);
-              setTimeOutDisabled(false);
-            }
-          });
-        // }, 10000);
-      }, 2000);
+        // drawBox.draw(canvas);
+        if (result.label !== "unknown") {
+          console.log(attendanceStatus);
+          onProcessAttendance(result.label, attendanceStatus);
+          setTimeout(() => {
+            // setAttendanceStatus();
+            setTimeInDisabled(false);
+            setTimeOutDisabled(false);
+          }, 3000);
+        } else {
+          message.error(
+            "Please try again and make sure to face in front of the camera!"
+          );
+          // setAttendanceStatus();
+          setTimeInDisabled(false);
+          setTimeOutDisabled(false);
+        }
+      });
+      // }, 10000);
+    }, 2000);
   };
-
 
   const updateTime = () => {
     time = new Date().toLocaleTimeString();
@@ -224,8 +231,8 @@ const AttendanceDashboard = () => {
 
   setInterval(updateTime, 1000);
   let employeeName = attendanceData
-  ? `${attendanceData?.lastName}, ${attendanceData?.firstName} ${attendanceData.middleName}`
-  : "";
+    ? `${attendanceData?.lastName}, ${attendanceData?.firstName} ${attendanceData.middleName}`
+    : "";
   return (
     <Box className={classes.attendanceContainer}>
       <PageHeader
@@ -312,15 +319,42 @@ const AttendanceDashboard = () => {
                 </Col>
 
                 <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '20px'}}>
-                <Button type="primary" style={{ width: '150px'}} onClick={() => onClickTimeIn()} disabled={timeInDisabled}>TIME-IN</Button>
-                </div>
-
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      marginTop: "20px",
+                    }}
+                  >
+                    <Button
+                      type="primary"
+                      style={{ width: "150px" }}
+                      onClick={() => onClickTimeIn()}
+                      disabled={timeInDisabled}
+                    >
+                      TIME-IN
+                    </Button>
+                  </div>
                 </Col>
                 <Col xs={{ span: 12 }} md={{ span: 12 }} layout="vertical">
-                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', marginTop: '20px'}}>
-                <Button type="primary" style={{ width: '150px'}} onClick={() => onClickTimeOut()} disabled={timeOutDisabled}>TIME-OUT</Button>
-                </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      marginTop: "20px",
+                    }}
+                  >
+                    <Button
+                      type="primary"
+                      style={{ width: "150px" }}
+                      onClick={() => onClickTimeOut()}
+                      disabled={timeOutDisabled}
+                    >
+                      TIME-OUT
+                    </Button>
+                  </div>
                 </Col>
                 {viewDeatailsImg ? (
                   <>
@@ -412,11 +446,7 @@ const AttendanceDashboard = () => {
           </Descriptions.Item>
           <Descriptions.Item label="SCANNER">
             <div className="display-flex justify-content-center" id="scanner">
-              <video
-                crossOrigin="anonymous"
-                ref={videoRef}
-                autoPlay
-              ></video>
+              <video crossOrigin="anonymous" ref={videoRef} autoPlay></video>
             </div>
           </Descriptions.Item>
         </Descriptions>

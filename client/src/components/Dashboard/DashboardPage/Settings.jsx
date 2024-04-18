@@ -325,6 +325,39 @@ const Settings = (props) => {
     const imgWindow = window.open(src);
     imgWindow?.document.write(image.outerHTML);
   };
+
+  const imgprops2 = {
+    beforeUpload: (file) => {
+      const isIMG = file.type.startsWith("image/png");
+
+      if (!isIMG) {
+        message.error(`${file.name} is not an png image`);
+      }
+
+      return isIMG || Upload.LIST_IGNORE;
+    },
+    onChange: (info) => {
+      console.log(info.fileList);
+    },
+  };
+
+  const onPreview2 = async (file) => {
+    let src = file.url;
+
+    if (!src) {
+      src = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj);
+
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    imgWindow?.document.write(image.outerHTML);
+  };
   return (
     <>
       <header>
@@ -792,10 +825,10 @@ const Settings = (props) => {
                       ]}
                     >
                       <Upload
-                        {...imgprops}
+                        {...imgprops2}
                         listType="picture-card"
                         maxCount={1}
-                        onPreview={onPreview}
+                        onPreview={onPreview2}
                       >
                         <div>
                           <PlusOutlined />

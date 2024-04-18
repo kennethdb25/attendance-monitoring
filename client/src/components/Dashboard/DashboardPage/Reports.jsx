@@ -63,7 +63,7 @@ const Reports = (props) => {
   // eslint-disable-next-line no-unused-vars
   const [paginationTimeSheet, setPaginationTimeSheet] = useState({
     defaultCurrent: 1,
-    pageSize: 10,
+    pageSize: 5,
     total: timeSheetCount,
   });
 

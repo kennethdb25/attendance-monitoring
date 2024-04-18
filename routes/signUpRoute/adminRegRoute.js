@@ -1,11 +1,11 @@
-const express = require("express");
-const multer = require("multer");
+const express = require('express');
+const multer = require('multer');
 const AdminRegRouter = new express.Router();
-const AdminModel = require("../../models/adminModel");
+const AdminModel = require('../../models/adminModel');
 
 const imgconfig = multer.diskStorage({
   destination: (req, file, callback) => {
-    callback(null, "./uploads");
+    callback(null, './uploads');
   },
   filename: (req, file, callback) => {
     callback(null, `${Date.now()}-${file.originalname}`);
@@ -13,10 +13,10 @@ const imgconfig = multer.diskStorage({
 });
 
 const isImage = (req, file, callback) => {
-  if (file.mimetype.startsWith("image")) {
+  if (file.mimetype.startsWith('image')) {
     callback(null, true);
   } else {
-    callback(new Error("Only image is allowed"));
+    callback(new Error('Only image is allowed'));
   }
 };
 
@@ -26,14 +26,13 @@ const upload = multer({
 });
 
 // register admin
-AdminRegRouter.post("/api/register", async (req, res) => {
-  const { employeeId, firstName, middleName, lastName, email, password } =
-    req.body;
+AdminRegRouter.post('/api/register', async (req, res) => {
+  const { employeeId, firstName, middleName, lastName, userType, email, password } = req.body;
 
   // validate if employee id exist
   const validate = await AdminModel.findOne({ employeeId: employeeId });
   if (validate) {
-    return res.status(422).json({ error: "ID is already exists" });
+    return res.status(422).json({ error: 'ID is already exists' });
   }
 
   try {
@@ -42,8 +41,8 @@ AdminRegRouter.post("/api/register", async (req, res) => {
       firstName: firstName.toUpperCase(),
       middleName: middleName.toUpperCase(),
       lastName: lastName.toUpperCase(),
-      userType: "Super Admin",
-      acctStatus: "Active",
+      userType,
+      acctStatus: 'Active',
       email,
       password,
     });
@@ -57,7 +56,7 @@ AdminRegRouter.post("/api/register", async (req, res) => {
   }
 });
 
-AdminRegRouter.get("/api/accounts", async (req, res) => {
+AdminRegRouter.get('/api/accounts', async (req, res) => {
   try {
     const allAccounts = await AdminModel.find().sort({ lastName: -1 });
     return res.status(200).json({ status: 200, body: allAccounts });

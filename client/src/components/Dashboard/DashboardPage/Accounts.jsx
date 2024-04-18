@@ -13,6 +13,7 @@ import {
   Divider,
   Drawer,
   Typography,
+  Select,
 } from "antd";
 import {
   SearchOutlined,
@@ -575,7 +576,7 @@ const Accounts = (props) => {
                   </Col>
                 </Row>
                 <Row gutter={12}>
-                  <Col xs={{ span: 24 }} md={{ span: 12 }}>
+                  <Col xs={{ span: 24 }} md={{ span: 8 }}>
                     <Form.Item
                       label="Employee ID"
                       name="employeeId"
@@ -596,7 +597,7 @@ const Accounts = (props) => {
                       <Input placeholder="Enter your employee id" />
                     </Form.Item>
                   </Col>
-                  <Col xs={{ span: 24 }} md={{ span: 12 }}>
+                  <Col xs={{ span: 24 }} md={{ span: 8 }}>
                     <Form.Item
                       label="Email"
                       name="email"
@@ -617,6 +618,35 @@ const Accounts = (props) => {
                       ]}
                     >
                       <Input placeholder="Enter your email" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={{ span: 24 }} md={{ span: 8 }}>
+                    <Form.Item
+                      label="User Type"
+                      name="userType"
+                      labelCol={{
+                        span: 24,
+                        //offset: 2
+                      }}
+                      wrapperCol={{
+                        span: 24,
+                      }}
+                      hasFeedback
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter a user type",
+                        },
+                      ]}
+                    >
+                      <Select placeholder="Select a user type">
+                        <Select.Option key="1" value="User">
+                          User
+                        </Select.Option>
+                        <Select.Option key="2" value="Super Admin">
+                          Super Admin
+                        </Select.Option>
+                      </Select>
                     </Form.Item>
                   </Col>
                 </Row>

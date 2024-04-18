@@ -139,42 +139,53 @@ const HomeDashboard = (props) => {
                 <span>Reports</span>
               </a>
             </li>
-            <li key="li3">
-              <a
-                key={3}
-                className={currentActive === 3 ? "active" : "none"}
-                onClick={() => (setCurrentActive(3), getInventoryData())}
-              >
-                <UserOutlined />
-                <span className="las la-clipboard-list"></span>
-                <span>Accounts</span>
-              </a>
-            </li>
-            <li key="li4">
-              <a
-                key={4}
-                className={currentActive === 4 ? "active" : "none"}
-                onClick={() => (setCurrentActive(4), getInventoryData())}
-              >
-                <UsergroupAddOutlined />
-                <span className="las la-clipboard-list"></span>
-                <span>Employee</span>
-              </a>
-            </li>
-            <li key="li5">
-              <a key={5} onClick={() => setCurrentActive(5)}>
-                <ScheduleOutlined />
-                <span className="las la-clipboard-list"></span>
-                <span>Facial Recognition</span>
-              </a>
-            </li>
+            {loginData.validUser?.userType === "Super Admin" ? (
+              <>
+                <li key="li3">
+                  <a
+                    key={3}
+                    className={currentActive === 3 ? "active" : "none"}
+                    onClick={() => (setCurrentActive(3), getInventoryData())}
+                  >
+                    <UserOutlined />
+                    <span className="las la-clipboard-list"></span>
+                    <span>Accounts</span>
+                  </a>
+                </li>
+                <li key="li4">
+                  <a
+                    key={4}
+                    className={currentActive === 4 ? "active" : "none"}
+                    onClick={() => (setCurrentActive(4), getInventoryData())}
+                  >
+                    <UsergroupAddOutlined />
+                    <span className="las la-clipboard-list"></span>
+                    <span>Employee</span>
+                  </a>
+                </li>
+              </>
+            ) : null}
+            {loginData.validUser?.userType !== "Super Admin" ? (
+              <>
+                <li key="li5">
+                  <a key={5} onClick={() => setCurrentActive(5)}>
+                    <ScheduleOutlined />
+                    <span className="las la-clipboard-list"></span>
+                    <span>Facial Recognition</span>
+                  </a>
+                </li>
+              </>
+            ) : null}
           </ul>
         </div>
       </div>
       <div className="main-content">
         {currentActive === 1 ? (
           <>
-            <Dashboard handleLogout={handleLogout} />
+            <Dashboard
+              handleLogout={handleLogout}
+              employeeInfo={employeeInfo}
+            />
           </>
         ) : currentActive === 2 ? (
           <>
