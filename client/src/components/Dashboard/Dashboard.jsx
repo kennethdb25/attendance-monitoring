@@ -28,7 +28,7 @@ const HomeDashboard = (props) => {
   const [timeSheetInfo, setTimeSheetInfo] = useState();
   const { loginData, setLoginData } = useContext(LoginContext);
 
-  const { setData } = props;
+  const { setData, getStatisticData, statisticsInfo } = props;
 
   const getInventoryData = async () => {
     const adminData = await fetch("/api/accounts", {
@@ -63,6 +63,7 @@ const HomeDashboard = (props) => {
     if (resTimeSheet.status === 200) {
       setTimeSheetInfo(resTimeSheet.body);
     }
+
   };
 
   const handleLogout = async () => {
@@ -121,7 +122,7 @@ const HomeDashboard = (props) => {
               <a
                 key={1}
                 className={currentActive === 1 ? "active" : "none"}
-                onClick={() => setCurrentActive(1)}
+                onClick={() => (setCurrentActive(1), getStatisticData())}
               >
                 <HomeOutlined />
                 <span className="las la-igloo"></span>
@@ -185,6 +186,7 @@ const HomeDashboard = (props) => {
             <Dashboard
               handleLogout={handleLogout}
               employeeInfo={employeeInfo}
+              statisticsInfo={statisticsInfo}
             />
           </>
         ) : currentActive === 2 ? (

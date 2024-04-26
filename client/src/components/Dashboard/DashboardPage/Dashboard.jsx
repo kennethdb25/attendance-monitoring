@@ -7,14 +7,14 @@ import { Bar } from "react-chartjs-2";
 import { LogoutOutlined } from "@ant-design/icons";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { LoginContext } from "../../../Context/Context";
-import { Divider } from "antd";
+import { Divider, Select } from "antd";
 import "./style.css";
 import "antd/dist/antd.min.css";
 
 Chart.register(CategoryScale);
 
 const Dashboard = (props) => {
-  const { handleLogout } = props;
+  const { handleLogout, statisticsInfo } = props;
   const { loginData } = useContext(LoginContext);
 
   const data = [
@@ -124,7 +124,7 @@ const Dashboard = (props) => {
         <div className="cards">
           <div className="card-single">
             <div>
-              <h1>{0}</h1>
+              <h1>{statisticsInfo.getTotalEmployee}</h1>
               <span>Total Employee</span>
             </div>
             <div>
@@ -133,7 +133,7 @@ const Dashboard = (props) => {
           </div>
           <div className="card-single">
             <div>
-              <h1>{0}</h1>
+              <h1>{statisticsInfo.totalTimeinToday}</h1>
               <span>Time-In Today</span>
             </div>
             <div>
@@ -142,7 +142,7 @@ const Dashboard = (props) => {
           </div>
           <div className="card-single">
             <div>
-              <h1>{0}</h1>
+              <h1>{statisticsInfo.totalTimeOutToday}</h1>
               <span>Time-Out Today</span>
             </div>
             <div>
@@ -151,8 +151,8 @@ const Dashboard = (props) => {
           </div>
           <div className="card-single">
             <div>
-              <h1>{0}</h1>
-              <span>Total Absences Yesterday</span>
+              <h1>{statisticsInfo.totalAbsencesYesterday}</h1>
+              <span>Total Absences Today</span>
             </div>
             <div>
               <span className="lab la-google-wallet"></span>
@@ -163,7 +163,7 @@ const Dashboard = (props) => {
           <div className="customers">
             <div className="card-header">
               <Divider orientation="left" orientationMargin="0">
-                <h3>Total Time-In and Time-Out</h3>
+                <h3>Total Time-In</h3>
               </Divider>
             </div>
             <div className="card-body">
@@ -186,7 +186,7 @@ const Dashboard = (props) => {
           <div className="customers">
             <div className="card-header">
               <Divider orientation="left" orientationMargin="0">
-                <h3>Total Absences</h3>
+                <h3>Total Time-Out</h3>
               </Divider>
             </div>
             <div className="card-body">

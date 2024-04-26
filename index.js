@@ -16,6 +16,7 @@ const SignInRouter = require('./routes/loginRoute/loginRoute');
 const EmployeeRouter = require('./routes/addEmployeeRoute/employeeRoute');
 const AddReportRouter = require('./routes/reportRoute/reportRoute');
 const AttendanceRouter = require('./routes/attendanceRoute/attendanceRoute');
+const DashboardRouter = require('./routes/dashboardRoute/dashboardRoute');
 
 //ROUTES
 app.use(AdminRegRouter);
@@ -24,6 +25,7 @@ app.use(SignInRouter);
 app.use(EmployeeRouter);
 app.use(AddReportRouter);
 app.use(AttendanceRouter);
+app.use(DashboardRouter);
 
 app.use('/file-uploads', express.static('./file-uploads'));
 

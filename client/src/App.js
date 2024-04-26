@@ -1,28 +1,29 @@
-import { useEffect, useState, useContext } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
-import { LoginContext } from "./Context/Context";
-import { ToastContainer } from "react-toastify";
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
-import "./App.css";
-import ROUTE from "./Routes/Route";
-import LoginContent from "./components/Login/LoginContent";
-import ForgotPassword from "./components/ForgotPassword/ForgotPassword";
-import HomeDashboard from "./components/Dashboard/Dashboard";
+import { useEffect, useState, useContext } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { LoginContext } from './Context/Context';
+import { ToastContainer } from 'react-toastify';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import './App.css';
+import ROUTE from './Routes/Route';
+import LoginContent from './components/Login/LoginContent';
+import ForgotPassword from './components/ForgotPassword/ForgotPassword';
+import HomeDashboard from './components/Dashboard/Dashboard';
 
 function App() {
-  const [data, setData] = useState("");
+  const [data, setData] = useState('');
+  const [statisticsInfo, setStatisticsInfo] = useState();
   // eslint-disable-next-line no-unused-vars
   const { loginData, setLoginData } = useContext(LoginContext);
   const history = useNavigate();
 
   const LoginValid = async () => {
-    if (localStorage.getItem("adminToken")) {
-      let validToken = localStorage.getItem("adminToken");
-      const res = await fetch("/api/valid", {
-        method: "GET",
+    if (localStorage.getItem('adminToken')) {
+      let validToken = localStorage.getItem('adminToken');
+      const res = await fetch('/api/valid', {
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: validToken,
         },
       });
@@ -33,16 +34,30 @@ function App() {
         console.log(data.error);
         history(ROUTE.PAGENOTFOUND);
       } else {
-        console.log("Verified User");
+        console.log('Verified User');
         setLoginData(data);
-        history("/dashboard");
+        history('/dashboard');
       }
     } else {
       setData(true);
     }
   };
+  const getStatisticData = async () => {
+    const statisticData = await fetch('/api/get-statistics', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const resStatistic = await statisticData.json();
+    if (resStatistic.status === 201) {
+      setStatisticsInfo(resStatistic.body);
+      console.log(statisticsInfo);
+    }
+  };
 
   useEffect(() => {
+    getStatisticData();
     setTimeout(() => {
       LoginValid();
     }, 3000);
@@ -62,17 +77,19 @@ function App() {
             <Route path={ROUTE.FORGOTPASSWORD} element={<ForgotPassword />} />
             <Route
               path={ROUTE.DASHBOARD}
-              element={<HomeDashboard setData={setData} />}
+              element={
+                <HomeDashboard setData={setData} getStatisticData={getStatisticData} statisticsInfo={statisticsInfo} />
+              }
             />
           </Routes>
         </>
       ) : (
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100vh",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
           }}
         >
           Loading Portal &nbsp;
