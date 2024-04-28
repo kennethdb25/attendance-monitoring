@@ -13,6 +13,7 @@ import HomeDashboard from './components/Dashboard/Dashboard';
 function App() {
   const [data, setData] = useState('');
   const [statisticsInfo, setStatisticsInfo] = useState();
+  const [graphInfo, setGraphInfo] = useState();
   // eslint-disable-next-line no-unused-vars
   const { loginData, setLoginData } = useContext(LoginContext);
   const history = useNavigate();
@@ -52,7 +53,17 @@ function App() {
     const resStatistic = await statisticData.json();
     if (resStatistic.status === 201) {
       setStatisticsInfo(resStatistic.body);
-      console.log(statisticsInfo);
+    }
+
+    const graphData = await fetch('/api/graph-attendance', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const resGraph = await graphData.json();
+    if (resGraph.status === 200) {
+      setGraphInfo(resGraph.body);
     }
   };
 
@@ -78,7 +89,12 @@ function App() {
             <Route
               path={ROUTE.DASHBOARD}
               element={
-                <HomeDashboard setData={setData} getStatisticData={getStatisticData} statisticsInfo={statisticsInfo} />
+                <HomeDashboard
+                  setData={setData}
+                  getStatisticData={getStatisticData}
+                  statisticsInfo={statisticsInfo}
+                  graphInfo={graphInfo}
+                />
               }
             />
           </Routes>

@@ -10,24 +10,60 @@ DashboardRouter.get('/api/get-statistics', async (req, res) => {
   try {
     const getTotalEmployee = await EmployeeModel.find({}).count();
 
-    const totalTimeinToday = await AttendanceModel.find({
-      status: 'TIME-IN',
-      created: { $gt: new Date(`${getYear}-${getMonth}-${getToday}`) },
-    }).count();
-
-    const totalTimeOutToday = await AttendanceModel.find({
-      status: 'TIME-OUT',
-      created: { $gt: new Date(`${getYear}-${getMonth}-${getToday}`) },
-    }).count();
-
-    const getAbsences = await AttendanceModel.find({
-      status: 'TIME-IN',
-      created: {
-        $gte: new Date(`${getYear}-${getMonth}-${getToday}`),
+    const totalTimeinToday = await AttendanceModel.aggregate([
+      {
+        $match: {
+          status: 'TIME-IN',
+          created: { $gt: new Date(`${getYear}-${getMonth}-${getToday}`) },
+        },
       },
-    }).count();
+      {
+        $group: {
+          _id: '$email',
+          uniqueValues: {
+            $addToSet: '$email',
+          },
+        },
+      },
+    ]);
 
-    const totalAbsencesYesterday = getTotalEmployee - getAbsences;
+    const totalTimeOutToday = await AttendanceModel.aggregate([
+      {
+        $match: {
+          status: 'TIME-OUT',
+          created: { $gt: new Date(`${getYear}-${getMonth}-${getToday}`) },
+        },
+      },
+      {
+        $group: {
+          _id: '$email',
+          uniqueValues: {
+            $addToSet: '$email',
+          },
+        },
+      },
+    ]);
+
+    const getAbsences = await AttendanceModel.aggregate([
+      {
+        $match: {
+          status: 'TIME-IN',
+          created: {
+            $gte: new Date(`${getYear}-${getMonth}-${getToday}`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$email',
+          uniqueValues: {
+            $addToSet: '$email',
+          },
+        },
+      },
+    ]);
+
+    const totalAbsencesYesterday = getTotalEmployee - getAbsences.length;
 
     return res
       .status(201)

@@ -49,4 +49,47 @@ AttendanceRouter.get('/api/get-all-attendance', async (req, res) => {
   }
 });
 
+AttendanceRouter.get('/api/graph-attendance', async (req, res) => {
+  const yearNow = new Date().getFullYear();
+
+  try {
+    const attendanceGraphTimeIn = await AttendanceModel.aggregate([
+      {
+        $match: {
+          status: 'TIME-IN',
+          year: yearNow.toString(),
+        },
+      },
+      {
+        $group: {
+          _id: '$month',
+          count: { $count: {} },
+        },
+      },
+    ]);
+
+    const attendanceGraphTimeOut = await AttendanceModel.aggregate([
+      {
+        $match: {
+          status: 'TIME-OUT',
+          year: yearNow.toString(),
+        },
+      },
+      {
+        $group: {
+          _id: '$month',
+          count: { $count: {} },
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      status: 200,
+      body: { attendanceGraphTimeIn, attendanceGraphTimeOut },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 module.exports = AttendanceRouter;

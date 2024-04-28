@@ -121,6 +121,7 @@ const LoginForm = () => {
                 style={{
                   backgroundColor: "blue",
                   border: "1px solid #d9d9d9",
+                  padding: '20px'
                 }}
               >
                 <span style={{ fontSize: "16px" }}>LOGIN</span>

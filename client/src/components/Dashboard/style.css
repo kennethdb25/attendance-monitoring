@@ -27,8 +27,9 @@
 }
 .sidebar-brand {
   height: 90px;
-  padding: 1rem 0rem 1rem 0rem;
+  padding: 0rem 0rem 1rem 0rem;
   color: #fff;
+  margin-bottom: 40px;
 }
 .sidebar-menu {
   margin-top: 2rem;

@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
-import { LoginContext } from "../../../Context/Context";
+import React, { useContext, useEffect, useState, useRef } from 'react';
+import { LoginContext } from '../../../Context/Context';
 import {
   Col,
   Form,
@@ -16,7 +16,7 @@ import {
   Table,
   Input,
   Modal,
-} from "antd";
+} from 'antd';
 import {
   BarChartOutlined,
   LogoutOutlined,
@@ -24,13 +24,15 @@ import {
   ReadOutlined,
   UndoOutlined,
   RollbackOutlined,
-} from "@ant-design/icons";
-import Highlighter from "react-highlight-words";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { GiHamburgerMenu } from "react-icons/gi";
-import "./style.css";
-import "antd/dist/antd.min.css";
-import { ReportData } from "../../../Data/Data";
+  GlobalOutlined,
+  PhoneOutlined,
+} from '@ant-design/icons';
+import Highlighter from 'react-highlight-words';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { GiHamburgerMenu } from 'react-icons/gi';
+import './style.css';
+import 'antd/dist/antd.min.css';
+import { ReportData } from '../../../Data/Data';
 
 const { RangePicker } = DatePicker;
 const { Title } = Typography;
@@ -40,8 +42,8 @@ const Reports = (props) => {
   const [form] = Form.useForm();
   const { loginData } = useContext(LoginContext);
   const searchInput = useRef(null);
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [reportDate, setReportDate] = useState([]);
@@ -75,43 +77,36 @@ const Reports = (props) => {
 
   const handleReset = (clearFilters) => {
     clearFilters();
-    setSearchText("");
+    setSearchText('');
   };
 
   const getColumnSearchProps = (dataIndex, colName) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
+          display: 'flex',
+          flexDirection: 'column',
           padding: 8,
         }}
       >
         <Input
           ref={searchInput}
-          prefix={<SearchOutlined style={{ marginRight: "10px" }} />}
+          prefix={<SearchOutlined style={{ marginRight: '10px' }} />}
           placeholder={`Search ${colName}`}
           value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
           style={{
             marginBottom: 8,
-            borderRadius: "10px",
+            borderRadius: '10px',
           }}
         />
         <Space>
           <Button
-            type="primary"
+            type='primary'
             onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
-            size="small"
+            size='small'
             style={{
               width: 100,
             }}
@@ -119,8 +114,8 @@ const Reports = (props) => {
             Search
           </Button>
           <Button
-            type="link"
-            size="small"
+            type='link'
+            size='small'
             icon={<UndoOutlined />}
             onClick={() => {
               clearFilters && handleReset(clearFilters);
@@ -139,12 +134,11 @@ const Reports = (props) => {
     filterIcon: (filtered) => (
       <SearchOutlined
         style={{
-          color: filtered ? "#1890ff" : "white",
+          color: filtered ? '#1890ff' : 'white',
         }}
       />
     ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilter: (value, record) => record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
     onFilterDropdownVisibleChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
@@ -154,12 +148,12 @@ const Reports = (props) => {
       searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{
-            backgroundColor: "#ffc069",
+            backgroundColor: '#ffc069',
             padding: 0,
           }}
           searchWords={[searchText]}
           autoEscape
-          textToHighlight={text ? text.toString() : ""}
+          textToHighlight={text ? text.toString() : ''}
         />
       ) : (
         text
@@ -168,86 +162,84 @@ const Reports = (props) => {
 
   const columnEmployee = [
     {
-      title: "Employee ID",
-      dataIndex: "employeeId",
-      key: "employeeId",
-      width: "10%",
-      ...getColumnSearchProps("employeeId", "Employee ID"),
+      title: 'Employee ID',
+      dataIndex: 'employeeId',
+      key: 'employeeId',
+      width: '10%',
+      ...getColumnSearchProps('employeeId', 'Employee ID'),
     },
     {
-      title: "Last Name",
-      dataIndex: "lastName",
-      key: "lastName",
-      width: "10%",
-      ...getColumnSearchProps("lastName", "Last Name"),
+      title: 'Last Name',
+      dataIndex: 'lastName',
+      key: 'lastName',
+      width: '10%',
+      ...getColumnSearchProps('lastName', 'Last Name'),
     },
     {
-      title: "First Name",
-      dataIndex: "firstName",
-      key: "firstName",
-      width: "10%",
-      ...getColumnSearchProps("firstName", "First Name"),
+      title: 'First Name',
+      dataIndex: 'firstName',
+      key: 'firstName',
+      width: '10%',
+      ...getColumnSearchProps('firstName', 'First Name'),
     },
     {
-      title: "Middle Name",
-      dataIndex: "middleName",
-      key: "middleName",
-      width: "10%",
-      ...getColumnSearchProps("middleName", "Middle Name"),
+      title: 'Middle Name',
+      dataIndex: 'middleName',
+      key: 'middleName',
+      width: '10%',
+      ...getColumnSearchProps('middleName', 'Middle Name'),
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "role",
-      width: "10%",
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'role',
+      width: '10%',
       filters: [
         {
-          text: "TIME-IN",
-          value: "TIME-IN",
+          text: 'TIME-IN',
+          value: 'TIME-IN',
         },
         {
-          text: "TIME-OUT",
-          value: "TIME-OUT",
+          text: 'TIME-OUT',
+          value: 'TIME-OUT',
         },
       ],
       onFilter: (value, record) => record.status.indexOf(value) === 0,
     },
     {
-      title: "Date",
-      dataIndex: "created",
-      key: "created",
-      width: "15%",
-      render: (text, row) => <>{new Date(row["created"]).toLocaleString()}</>,
+      title: 'Date',
+      dataIndex: 'created',
+      key: 'created',
+      width: '15%',
+      render: (text, row) => <>{new Date(row['created']).toLocaleString()}</>,
     },
     {
-      title: "Role",
-      dataIndex: "role",
-      key: "role",
-      width: "10%",
+      title: 'Role',
+      dataIndex: 'role',
+      key: 'role',
+      width: '10%',
     },
     {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
-      width: "10%",
+      title: 'Department',
+      dataIndex: 'department',
+      key: 'department',
+      width: '10%',
     },
     {
-      title: "",
-      dataIndex: "",
-      key: "actionButton",
-      width: "10%",
+      title: '',
+      dataIndex: '',
+      key: 'actionButton',
+      width: '10%',
       render: (record) => (
         <>
-          <div
-            style={{ display: "flex", justifyContent: "center", gap: "10px" }}
-          >
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
             <Button
               icon={<ReadOutlined />}
-              type="primary"
+              type='primary'
               onClick={(e) => {
                 onViewTimesheetDetails(record, e);
               }}
-              style={{ backgroundColor: "purple", border: "1px solid #d9d9d9" }}
+              style={{ backgroundColor: 'purple', border: '1px solid #d9d9d9' }}
             >
               Timesheet Details
             </Button>
@@ -262,7 +254,7 @@ const Reports = (props) => {
       return;
     }
     setLoading(true);
-    fetch("/api/report/get-generated")
+    fetch('/api/report/get-generated')
       .then((res) => res.json())
       .then((body) => {
         setData([...body.body]);
@@ -281,17 +273,17 @@ const Reports = (props) => {
     values.start = reportDate[0];
     values.end = reportDate[1];
 
-    const data = await fetch("/api/report/generate", {
-      method: "POST",
+    const data = await fetch('/api/report/generate', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(values),
     });
     const res = await data.json();
     if (res.status === 201) {
       form.resetFields();
-      message.success("Reports Successfully Generated and Ready to Download");
+      message.success('Reports Successfully Generated and Ready to Download');
       loadMoreData();
     }
   };
@@ -302,37 +294,63 @@ const Reports = (props) => {
 
   const onChange = (value, dateString) => {
     setReportDate(dateString);
-    console.log("Selected Time: ", value);
-    console.log("Formatted Selected Time: ", dateString);
+    console.log('Selected Time: ', value);
+    console.log('Formatted Selected Time: ', dateString);
   };
   const onOk = (value) => {
-    console.log("onOk: ", value);
+    console.log('onOk: ', value);
   };
 
   const handleDownload = (filename) => {
-    window.open(`/api/report/download-csv?filename=${filename}`, "_blank");
+    window.open(`/api/report/download-csv?filename=${filename}`, '_blank');
   };
 
   return (
     <>
       <header>
-        <h1 style={{ marginBottom: "0px" }}>
-          <label htmlFor="nav-toggle">
+        <h1 style={{ marginBottom: '0px' }}>
+          <label htmlFor='nav-toggle'>
             <span
-              className="las la-bars"
+              className='las la-bars'
               style={{
-                display: "flex",
-                gap: "10px",
-                flexDirection: "row",
-                alignItems: "center",
+                display: 'flex',
+                gap: '10px',
+                flexDirection: 'row',
+                alignItems: 'center',
               }}
             >
-              <GiHamburgerMenu style={{ cursor: "pointer" }} />
+              <GiHamburgerMenu style={{ cursor: 'pointer' }} />
               Reports
             </span>
           </label>
         </h1>
-        <div className="user-wrapper">
+        <div className='user-wrapper'>
+          <div
+            style={{
+              marginRight: '40px',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              // cursor: "pointer",
+              gap: '20px',
+            }}
+          >
+            <GlobalOutlined />
+            WWW.UCV.EDU.PH
+          </div>
+          <div
+            style={{
+              marginRight: '60px',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              // cursor: "pointer",
+              gap: '20px',
+            }}
+          >
+            <PhoneOutlined />
+            377-4618 | 375-2913 | 377-4616 | 377-4617
+          </div>
           <div>
             <h4>{`${loginData?.validUser?.firstName} ${loginData?.validUser?.lastName}`}</h4>
             <small>{`${loginData?.validUser?.userType}`}</small>
@@ -340,35 +358,35 @@ const Reports = (props) => {
           <div
             onClick={() => handleLogout()}
             style={{
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: "5px",
-              marginLeft: "15px",
-              color: "red",
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: '5px',
+              marginLeft: '15px',
+              color: 'red',
             }}
           >
             <LogoutOutlined />
-            <h3 style={{ margin: "0", color: "red" }}>Logout</h3>
+            <h3 style={{ margin: '0', color: 'red' }}>Logout</h3>
           </div>
         </div>
       </header>
       <main>
         <Row>
           <Col span={24}>
-            <Divider orientation="left" orientationMargin="0">
-              <h3 style={{ marginTop: "20px" }}>TIMESHEET INFORMATION</h3>
+            <Divider orientation='left' orientationMargin='0'>
+              <h3 style={{ marginTop: '20px' }}>TIMESHEET INFORMATION</h3>
             </Divider>
             <Table
-              key="timeSheetTable"
+              key='timeSheetTable'
               columns={columnEmployee}
               dataSource={timeSheetInfo}
               pagination={paginationTimeSheet}
             />
           </Col>
         </Row>
-        <Divider orientation="left" orientationMargin="0"></Divider>
+        <Divider orientation='left' orientationMargin='0'></Divider>
         <Row>
           <Col span={12}>
             <Form
@@ -376,18 +394,18 @@ const Reports = (props) => {
               labelCol={{
                 span: 24,
               }}
-              layout="horizontal"
+              layout='horizontal'
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
-              autoComplete="off"
+              autoComplete='off'
               style={{
-                width: "100%",
+                width: '100%',
               }}
             >
-              <Col xs={24} md={12} layout="vertical">
+              <Col xs={24} md={12} layout='vertical'>
                 <Form.Item
-                  label="Please select a report"
-                  name="report"
+                  label='Please select a report'
+                  name='report'
                   labelCol={{
                     span: 24,
                   }}
@@ -398,11 +416,11 @@ const Reports = (props) => {
                   rules={[
                     {
                       required: true,
-                      message: "Please select a report!",
+                      message: 'Please select a report!',
                     },
                   ]}
                 >
-                  <Select placeholder="Select a Report">
+                  <Select placeholder='Select a Report'>
                     {ReportData.map((value, index) => (
                       <Select.Option key={index} value={value.value}>
                         {value.name}
@@ -411,10 +429,10 @@ const Reports = (props) => {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col xs={24} md={12} layout="vertical">
+              <Col xs={24} md={12} layout='vertical'>
                 <Form.Item
-                  label="Custom Date"
-                  name="date"
+                  label='Custom Date'
+                  name='date'
                   labelCol={{
                     span: 24,
                   }}
@@ -423,12 +441,12 @@ const Reports = (props) => {
                   }}
                   hasFeedback
                 >
-                  <Space direction="vertical" size={12}>
+                  <Space direction='vertical' size={12}>
                     <RangePicker
                       showTime={{
-                        format: "HH:mm",
+                        format: 'HH:mm',
                       }}
-                      format="YYYY-MM-DD HH:mm"
+                      format='YYYY-MM-DD HH:mm'
                       onChange={onChange}
                       onOk={onOk}
                     />
@@ -438,19 +456,19 @@ const Reports = (props) => {
               <Row
                 gutter={12}
                 style={{
-                  display: "flex",
-                  justifyContent: "start",
-                  paddingTop: "20px",
+                  display: 'flex',
+                  justifyContent: 'start',
+                  paddingTop: '20px',
                 }}
               >
                 <Button
                   icon={<BarChartOutlined />}
                   style={{
-                    backgroundColor: "purple",
-                    border: "1px solid #d9d9d9",
+                    backgroundColor: 'purple',
+                    border: '1px solid #d9d9d9',
                   }}
-                  type="primary"
-                  htmlType="submit"
+                  type='primary'
+                  htmlType='submit'
                 >
                   Generate Report
                 </Button>
@@ -460,13 +478,13 @@ const Reports = (props) => {
           <Col span={12}>
             <Title level={4}>Recently Generated Report</Title>
             <div
-              id="scrollableDiv"
+              id='scrollableDiv'
               style={{
                 height: 600,
-                overflow: "auto",
-                padding: "0 16px",
-                border: "1px solid rgba(140, 140, 140, 0.35)",
-                backgroundColor: "f9f9f9",
+                overflow: 'auto',
+                padding: '0 16px',
+                border: '1px solid rgba(140, 140, 140, 0.35)',
+                backgroundColor: 'f9f9f9',
               }}
             >
               <InfiniteScroll
@@ -481,7 +499,7 @@ const Reports = (props) => {
                   />
                 }
                 endMessage={<Divider plain>Nothing to follow</Divider>}
-                scrollableTarget="scrollableDiv"
+                scrollableTarget='scrollableDiv'
               >
                 <List
                   dataSource={data}
@@ -493,9 +511,9 @@ const Reports = (props) => {
                       />
                       <div
                         style={{
-                          textDecorationLine: "underline",
-                          color: "blue",
-                          cursor: "pointer",
+                          textDecorationLine: 'underline',
+                          color: 'blue',
+                          cursor: 'pointer',
                         }}
                         onClick={() => {
                           handleDownload(item.filePath);
@@ -512,8 +530,8 @@ const Reports = (props) => {
         </Row>
 
         <Modal
-          key="employeeDetails"
-          title="EMPLOYEE DETAILS"
+          key='employeeDetails'
+          title='EMPLOYEE DETAILS'
           width={1200}
           open={viewTimesheetModal}
           onCancel={() => {
@@ -522,9 +540,9 @@ const Reports = (props) => {
           }}
           footer={[
             <Button
-              type="primary"
+              type='primary'
               icon={<RollbackOutlined />}
-              key="cancel"
+              key='cancel'
               onClick={() => {
                 setViewTimesheetModal(false);
                 setViewTimesheetData();
@@ -538,178 +556,136 @@ const Reports = (props) => {
             <Col xs={{ span: 0 }} md={{ span: 4 }}></Col>
             <Col xs={{ span: 24 }} md={{ span: 16 }}>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 24 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Employee ID
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.employeeId}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.employeeId} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     First Name
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.firstName}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.firstName} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Middle Name
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.middleName}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.middleName} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Last Name
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.lastName}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.lastName} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
               </Row>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 12 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Role
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.role}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.role} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 12 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Department
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.department}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.department} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
               </Row>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 12 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Created
                   </Title>
                   <Input
-                    value={new Date(
-                      viewTimesheetData?.created
-                    ).toLocaleString()}
+                    value={new Date(viewTimesheetData?.created).toLocaleString()}
                     readOnly
-                    style={{ borderRadius: "10px" }}
+                    style={{ borderRadius: '10px' }}
                   />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 12 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Email
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.email}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.email} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
               </Row>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Status
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.status}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.status} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Month
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.month}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.month} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout="vertical">
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
-                      marginTop: "20px",
+                      marginTop: '20px',
                     }}
                   >
                     Year
                   </Title>
-                  <Input
-                    value={viewTimesheetData?.year}
-                    readOnly
-                    style={{ borderRadius: "10px" }}
-                  />
+                  <Input value={viewTimesheetData?.year} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
               </Row>
             </Col>
