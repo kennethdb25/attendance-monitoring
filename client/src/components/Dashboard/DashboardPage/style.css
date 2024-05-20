@@ -536,6 +536,60 @@ td .status {
   border: 1px solid black;
 }
 
+/* DTR */
+
+table,td,tr,th {
+
+  border-collapse: collapse;
+  text-align:center;
+  font-family:arial;
+  font-size: 15px;
+ }
+
+
+ p {
+  text-align:left;
+  font-family:arial;
+  font-size: 12px;
+    }
+
+ p.civil_service_title {
+  text-align:left;
+  font-family:arial;
+  font-size: 10px;
+    }
+
+ p.civil_service_title2 {
+  /* padding-left: 10px; */
+  font-family:arial;
+  font-size: 12px;
+    }
+
+ p.name {
+   /* padding-left: 120px; */
+  font-family:arial;
+  font-size: 12px;
+    }
+
+ p.dtr {
+  padding-left: 90px;
+  font-family:arial;
+  font-weight:bold;
+  font-size: 16px;
+    }
+
+  p.circles {
+  padding-left: 180px;
+  font-family:arial;
+  font-size: 12px;
+    }
+
+ p.line1 {
+  /* padding-left: 40px; */
+  font-family:arial;
+  font-size: 16px;
+    }
+
 @media print {
   .no-print {
     display: none;

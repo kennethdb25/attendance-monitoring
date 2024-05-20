@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
+const mongoose = require('mongoose');
+const validator = require('validator');
 
 const AttendanceSchema = new mongoose.Schema({
   employeeId: {
@@ -21,11 +21,19 @@ const AttendanceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  time: {
+    type: String,
+    required: true,
+  },
   created: {
     type: Date,
     required: true,
   },
   month: {
+    type: String,
+    required: true,
+  },
+  day: {
     type: String,
     required: true,
   },
@@ -46,12 +54,12 @@ const AttendanceSchema = new mongoose.Schema({
     required: true,
     validator(value) {
       if (!validator.isEmail(value)) {
-        throw new Error("Not a valid email");
+        throw new Error('Not a valid email');
       }
     },
   },
 });
 
-const AttendanceModel = new mongoose.model("AttendanceInfo", AttendanceSchema);
+const AttendanceModel = new mongoose.model('AttendanceInfo', AttendanceSchema);
 
 module.exports = AttendanceModel;

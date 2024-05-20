@@ -8,7 +8,7 @@ DashboardRouter.get('/api/get-statistics', async (req, res) => {
   const getMonth = new Date().getMonth() + 1;
   const getYear = new Date().getFullYear();
   try {
-    const getTotalEmployee = await EmployeeModel.find({}).count();
+    const getTotalEmployee = await EmployeeModel.find({ employmentStatus: 'Active' }).count();
 
     const totalTimeinToday = await AttendanceModel.aggregate([
       {

@@ -4,21 +4,14 @@
 import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginContext } from '../../Context/Context';
-import {
-  HomeOutlined,
-  BarChartOutlined,
-  UsergroupAddOutlined,
-  UserOutlined,
-  ScheduleOutlined,
-} from '@ant-design/icons';
+import { HomeOutlined, BarChartOutlined, UsergroupAddOutlined, UserOutlined } from '@ant-design/icons';
 import './style.css';
 import 'antd/dist/antd.min.css';
 import Dashboard from './DashboardPage/Dashboard';
 import Reports from './DashboardPage/Reports';
 import Accounts from './DashboardPage/Accounts';
 import Settings from './DashboardPage/Settings';
-import { Drawer, Space, message } from 'antd';
-import AttendanceDashboard from '../Attendance/AttendanceDashboard';
+import { message } from 'antd';
 
 const HomeDashboard = (props) => {
   const history = useNavigate();
@@ -98,20 +91,20 @@ const HomeDashboard = (props) => {
       <div className='sidebar'>
         <div className='sidebar-brand'>
           <h2>
-            <span className='lab la-accusoft'>
+            {/* <span className='lab la-accusoft'>
               <img
                 style={{ width: '130px', height: '90px', marginLeft: '-45px' }}
                 src={require('../../Assets/1.png')}
                 alt='logo-dashboard'
               />
-            </span>
+            </span> */}
             <span style={{ color: 'white' }}>
-              <img
+              {/* <img
                 style={{ width: '140px', height: '95px', marginLeft: '-45px' }}
                 src={require('../../Assets/1.png')}
                 alt='logo-dashboard'
-              />
-              UCV MONITORING
+              /> */}
+              ATTENDANCE MONITORING
             </span>
           </h2>
         </div>
@@ -165,17 +158,6 @@ const HomeDashboard = (props) => {
                 </li>
               </>
             ) : null}
-            {loginData.validUser?.userType !== 'Super Admin' ? (
-              <>
-                <li key='li5'>
-                  <a key={5} onClick={() => setCurrentActive(5)}>
-                    <ScheduleOutlined />
-                    <span className='las la-clipboard-list'></span>
-                    <span>Facial Recognition</span>
-                  </a>
-                </li>
-              </>
-            ) : null}
           </ul>
         </div>
       </div>
@@ -203,18 +185,6 @@ const HomeDashboard = (props) => {
           </>
         ) : null}
       </div>
-      <Drawer
-        title='FACIAL RECOGNITION'
-        placement='left'
-        onClose={() => setCurrentActive(1)}
-        open={currentActive === 5 ? true : false}
-        height='100vh'
-        width='100%'
-        style={{ display: 'flex', justifyContent: 'center' }}
-        extra={<Space></Space>}
-      >
-        <AttendanceDashboard />
-      </Drawer>
     </>
   );
 };

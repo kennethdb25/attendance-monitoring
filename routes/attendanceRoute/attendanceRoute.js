@@ -5,34 +5,65 @@ const AttendanceModel = require('../../models/attendanceModel');
 
 AttendanceRouter.post('/api/add/attendance', async (req, res) => {
   const { employeeId, status } = req.body;
-  const today = new Date();
+  const newDay = new Date();
+  const convert = newDay.toLocaleString();
+  const time = convert.split(', ');
+  const today = new Date().toISOString();
+  const param = today.split('T');
 
   const getEmployeeData = await EmployeeModel.findOne({
     employeeId: employeeId,
   });
+
+  if (getEmployeeData?.employmentStatus === 'Resigned') {
+    return res.status(404).json({ error: 'Resigned Employee' });
+  }
+
+  if (status === 'TIME-OUT') {
+    const checkIfTimeGoFirstBeforeTimeOut = await AttendanceModel.findOne({
+      employeeId,
+      status: 'TIME-IN',
+      created: { $gte: new Date(param[0]) },
+    });
+
+    if (!checkIfTimeGoFirstBeforeTimeOut) {
+      return res.status(404).json({ error: 'No TIME-IN' });
+    }
+  }
 
   if (!getEmployeeData) {
     return res.status(404).json({ error: 'Employee Data Not Found' });
   }
 
   try {
-    const finalUser = new AttendanceModel({
-      employeeId: getEmployeeData.employeeId,
-      firstName: getEmployeeData.firstName,
-      middleName: getEmployeeData.middleName,
-      lastName: getEmployeeData.lastName,
+    const checkAttendanceToday = await AttendanceModel.findOne({
+      employeeId,
       status,
-      created: today.toISOString(),
-      month: today.toLocaleString('default', { month: 'long' }),
-      year: today.getFullYear().toString(),
-      role: getEmployeeData.role,
-      department: getEmployeeData.department,
-      email: getEmployeeData.email,
+      created: { $gte: new Date(param[0]) },
     });
+    if (!checkAttendanceToday) {
+      const finalUser = new AttendanceModel({
+        employeeId: getEmployeeData.employeeId,
+        firstName: getEmployeeData.firstName,
+        middleName: getEmployeeData.middleName,
+        lastName: getEmployeeData.lastName,
+        status,
+        created: newDay.toISOString(),
+        month: newDay.toLocaleString('default', { month: 'long' }),
+        day: newDay.getDate(),
+        time: time[1],
+        year: newDay.getFullYear().toString(),
+        role: getEmployeeData.role,
+        department: getEmployeeData.department,
+        email: getEmployeeData.email,
+      });
 
-    const storeData = await finalUser.save();
+      const storeData = await finalUser.save();
 
-    return res.status(201).json({ status: 201, body: storeData });
+      return res.status(201).json({ status: 201, body: storeData });
+    } else {
+      res.status(403).json({ error: `${status} already completed` });
+    }
   } catch (error) {
     console.log(error);
     return res.status(422).json(error);

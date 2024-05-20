@@ -53,7 +53,7 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
           { id: 'middleName', title: 'Employee Middle Name' },
           { id: 'lastName', title: 'Employee Last Name' },
           { id: 'status', title: 'Status' },
-          { id: 'created', title: 'Created Date' },
+          { id: 'created', title: 'Time-in/Time-out Date' },
           { id: 'role', title: 'Role' },
           { id: 'department', title: 'Department' },
           { id: 'email', title: 'Employee' },
@@ -74,7 +74,7 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
             firstName: details.firstName,
             middleName: details.middleName,
             lastName: details.lastName,
-            created: new Date(details.created).toLocaleDateString(),
+            created: new Date(details.created).toLocaleString(),
             role: details.role,
             department: details.department,
             email: details.email,
@@ -86,7 +86,7 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
             middleName: details.middleName,
             lastName: details.lastName,
             status: details.status,
-            created: new Date(details.created).toLocaleDateString(),
+            created: new Date(details.created).toLocaleString(),
             role: details.role,
             department: details.department,
             email: details.email,
@@ -128,6 +128,32 @@ AddReportRouter.get('/api/report/download-csv', async (req, res) => {
       res.status(500).json({ error: 'An error occured' });
     }
   });
+});
+
+AddReportRouter.get('/api/print-dtr', async (req, res) => {
+  const { employeeId, startDate, year } = req.query;
+  const endDate = parseInt(startDate) + 1;
+
+  const dateNow = new Date(`${year}-${startDate}`);
+  const month = dateNow.toLocaleString('default', { month: 'long' });
+  const employee = await EmployeeModel.findOne({ employeeId });
+
+  if (employee) {
+    const dtr = await AttendanceModel.find({
+      employeeId,
+      created: { $gte: new Date(`${year}-${startDate}`), $lt: new Date(`${year}=${endDate}`) },
+    }).sort({ created: 1 });
+
+    const result = dtr.map((x) => {
+      return {
+        day: x.day,
+        status: x.status,
+        time: x.time,
+      };
+    });
+    console.log(result);
+    return res.status(200).json({ status: 200, body: { year, month, employee, result } });
+  }
 });
 
 module.exports = AddReportRouter;

@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
+const mongoose = require('mongoose');
+const validator = require('validator');
 
 const EmployeeSchema = new mongoose.Schema({
   employeeId: {
@@ -21,6 +21,10 @@ const EmployeeSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  employmentStatus: {
+    type: String,
+    required: true,
+  },
   role: {
     type: String,
     required: true,
@@ -35,12 +39,12 @@ const EmployeeSchema = new mongoose.Schema({
     required: true,
     validator(value) {
       if (!validator.isEmail(value)) {
-        throw new Error("Not a valid email");
+        throw new Error('Not a valid email');
       }
     },
   },
 });
 
-const EmployeeModel = new mongoose.model("EmployeeInfo", EmployeeSchema);
+const EmployeeModel = new mongoose.model('EmployeeInfo', EmployeeSchema);
 
 module.exports = EmployeeModel;

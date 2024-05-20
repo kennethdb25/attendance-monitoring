@@ -1,11 +1,12 @@
 const ROUTE = {
-  DASHBOARD: "/dashboard",
+  DASHBOARD: '/dashboard',
 
-  HOMEPAGE: "/",
-  FORGOTPASSWORD: "/forgot-password",
+  HOMEPAGE: '/',
+  FORGOTPASSWORD: '/forgot-password',
 
-  ATTENDANCEDASHBOARD: "/attendance/dashboard",
-  PAGENOTFOUND: "/*",
+  ATTENDANCEDASHBOARD: '/attendance/dashboard',
+  ATTENDANCE: '/attendance-monitoring',
+  PAGENOTFOUND: '/*',
 };
 
 export default ROUTE;

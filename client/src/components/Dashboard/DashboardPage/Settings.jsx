@@ -1,10 +1,28 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-sequences */
 import React, { useContext, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
+import { useReactToPrint } from 'react-to-print';
 import { CategoryScale } from 'chart.js';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import { LoginContext } from '../../../Context/Context';
-import { Col, Row, Table, Button, Space, Input, Form, message, Upload, Modal, Divider, Drawer, Typography } from 'antd';
+import {
+  Col,
+  Row,
+  Table,
+  Button,
+  Space,
+  Input,
+  Form,
+  message,
+  Upload,
+  Modal,
+  Divider,
+  Drawer,
+  Typography,
+  Popconfirm,
+  DatePicker,
+} from 'antd';
 import {
   SearchOutlined,
   ReadOutlined,
@@ -15,6 +33,9 @@ import {
   PlusOutlined,
   GlobalOutlined,
   PhoneOutlined,
+  CheckOutlined,
+  PrinterOutlined,
+  VerticalLeftOutlined,
 } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import './style.css';
@@ -30,9 +51,14 @@ const Settings = (props) => {
   const searchInput = useRef(null);
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
-  const [viewEDetailsData, setViewEDetailsData] = useState(null);
+  const [viewEDetailsData, setViewEDetailsData] = useState('');
   const [viewEDetailsModal, setViewEDetailsModal] = useState(false);
   const [employeeVisible, setEmployeeVisible] = useState(false);
+  const [monthModal, setMOnthModal] = useState(false);
+  const [dtrModal, setDtrModal] = useState(false);
+
+  const contentToPrint = useRef(null);
+  const [dtrData, setDtrData] = useState();
 
   const { employeeInfo, getInventoryData } = props;
 
@@ -56,6 +82,48 @@ const Settings = (props) => {
     defaultCurrent: 1,
     pageSize: 10,
     total: employeeCount,
+  });
+
+  const onProcessTagAsResigned = async (employeeId) => {
+    if (employeeId) {
+      const data = await fetch(`/api/tag-as-resigned/${employeeId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const res = await data.json();
+
+      if (res.status === 200) {
+        message.success('Process Completed');
+        setViewEDetailsData('');
+        getInventoryData();
+        setViewEDetailsModal(false);
+      } else {
+        message.error('Something went wrong. Please try again later');
+      }
+    }
+  };
+
+  const onChange = async (date, dateString) => {
+    console.log(dateString);
+    if (dateString) {
+      const rangeDate = dateString.split('-');
+
+      const data = await fetch(
+        `/api/print-dtr?employeeId=${viewEDetailsData.employeeId}&startDate=${rangeDate[1]}&year=${rangeDate[0]}`
+      );
+      const res = await data.json();
+      setDtrData(res.body);
+    }
+  };
+
+  const handlePrint = useReactToPrint({
+    documentTitle: 'Print This Document',
+    onBeforePrint: () => console.log('before printing...'),
+    onAfterPrint: () => console.log('after printing...'),
+    removeAfterPrint: true,
   });
 
   const handleOpenEmployeeModal = () => {
@@ -230,6 +298,12 @@ const Settings = (props) => {
       width: '10%',
     },
     {
+      title: 'Employment Status',
+      dataIndex: 'employmentStatus',
+      key: 'employmentStatus',
+      width: '10%',
+    },
+    {
       title: (
         <>
           <div>
@@ -367,7 +441,7 @@ const Settings = (props) => {
             }}
           >
             <GlobalOutlined />
-            WWW.UCV.EDU.PH
+            WWW.ATTENDANCE.COM
           </div>
           <div
             style={{
@@ -380,7 +454,7 @@ const Settings = (props) => {
             }}
           >
             <PhoneOutlined />
-            377-4618 | 375-2913 | 377-4616 | 377-4617
+            +63 123 4567
           </div>
           <div>
             <h4>{`${loginData?.validUser?.firstName} ${loginData?.validUser?.lastName}`}</h4>
@@ -419,22 +493,602 @@ const Settings = (props) => {
         </Row>
 
         <Modal
-          key='employeeDetails'
-          title='EMPLOYEE DETAILS'
-          width={1200}
-          open={viewEDetailsModal}
+          key='selectMonth'
+          title='SELECT MONTH'
+          width={300}
           onCancel={() => {
-            setViewEDetailsModal(false);
-            setViewEDetailsData();
+            setMOnthModal(false);
           }}
+          open={monthModal}
           footer={[
             <Button
               type='primary'
               icon={<RollbackOutlined />}
               key='cancel'
               onClick={() => {
+                setMOnthModal(false);
+              }}
+            >
+              Cancel
+            </Button>,
+            <Button
+              type='primary'
+              icon={<VerticalLeftOutlined />}
+              key='cancel'
+              disabled={dtrData ? false : true}
+              onClick={() => {
+                setMOnthModal(false);
+                setDtrModal(true);
+              }}
+            >
+              Next
+            </Button>,
+          ]}
+        >
+          <Space direction='vertical'>
+            <DatePicker onChange={onChange} picker='month' />
+          </Space>
+        </Modal>
+
+        <Modal
+          key='dtrPrint'
+          title=''
+          width={400}
+          onCancel={() => {
+            setDtrModal(false);
+          }}
+          open={dtrModal}
+          footer={[
+            <Button
+              type='primary'
+              icon={<RollbackOutlined />}
+              key='cancelPrint'
+              onClick={() => {
+                setDtrModal(false);
+              }}
+            >
+              Cancel
+            </Button>,
+            <Button
+              type='primary'
+              icon={<PrinterOutlined />}
+              key='Print'
+              disabled={dtrData ? false : true}
+              onClick={() => {
+                handlePrint(null, () => contentToPrint.current);
+              }}
+            >
+              Print
+            </Button>,
+          ]}
+        >
+          <>
+            <div ref={contentToPrint}>
+              <caption>
+                <p class='civil_service_title'>
+                  <em>Civil Service Form No. 48</em>
+                </p>
+                <p class='dtr'>
+                  <em>DAILY TIME RECORD</em>
+                </p>
+                <p class='line1'>
+                  <em>_____________________________</em>
+                </p>
+                <p class='name'>
+                  Employee Name: {dtrData ? `${dtrData?.employee.firstName} ${dtrData?.employee.lastName}` : ''}
+                </p>
+                <p class='name'>Role: {dtrData ? `${dtrData?.employee.role}` : ''} </p>
+                <p class='civil_service_title2'>
+                  <em>
+                    For the month of {dtrData ? dtrData.month : ''}
+                    <br />
+                    Official hours for TIME-IN
+                    <br />
+                    and TIME-OUT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Year:
+                    {dtrData ? dtrData.year : ''}
+                    <br />
+                    <br />
+                  </em>
+                </p>
+              </caption>
+              <table border='1'>
+                <tr>
+                  <th rowspan='2'>Day</th>
+                  <th colspan='1'>A.M.</th>
+                  <th colspan='1'>P.M.</th>
+                  <th colspan='2'>Undertime</th>
+                  <th colspan='1'>Hours</th>
+                </tr>
+                <tr>
+                  <th>TIME-IN</th>
+                  <th>TIME-OUT</th>
+                  <th>TIME-IN</th>
+                  <th>TIME-OUT</th>
+                  <th>Total</th>
+                </tr>
+                <tr>
+                  <th>1</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '1') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : ''}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>2</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '2') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : ''}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>3</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '3') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>4</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '4') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>5</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '5') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>6</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '6') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>7</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '7') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>8</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '8') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>9</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '9') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>10</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '10') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>11</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '11') return data;
+                    })
+                    .map((result) => {
+                      console.log(result);
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>12</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '12') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>13</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '13') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>14</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '14') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>15</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '15') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>16</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '16') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>17</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '17') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>18</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '18') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>19</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '19') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>20</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '20') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>21</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '21') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>22</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '22') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>23</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '23') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>24</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '24') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>25</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '25') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>26</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '26') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>27</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '27') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>28</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '28') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>29</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '29') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>30</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '30') return data;
+                    })
+                    .map((result) => {
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th>31</th>
+                  {dtrData?.result
+                    .filter((data) => {
+                      if (data.day === '31') return data;
+                    })
+                    .map((result) => {
+                      console.log(result);
+                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                    })}
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <th colspan='5'>
+                    <div>Total</div>
+                  </th>
+                </tr>
+              </table>
+              <p>
+                I certify on my honor that the above is a true and correct
+                <br />
+                report of the hours of work performed, record of which was
+                <br />
+                made daily at the time of TIME-IN and TIME-OUT from office.
+              </p>
+              <br />
+              ______________________________
+              <br />
+              <p>VERIFIED as to the prescribed office hours:</p>
+              <br />
+              ______________________________
+              <br />
+              <p>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; In Charge
+              </p>
+            </div>
+          </>
+        </Modal>
+
+        <Modal
+          key='employeeDetails'
+          title='EMPLOYEE DETAILS'
+          width={1200}
+          open={viewEDetailsModal}
+          onCancel={() => {
+            setViewEDetailsModal(false);
+            setViewEDetailsData('');
+          }}
+          footer={[
+            <Popconfirm
+              placement='top'
+              title={`Proceed to PRINT DTR?`}
+              onConfirm={() => setMOnthModal(true)}
+              okText='Proceed'
+              cancelText='Cancel'
+            >
+              <Button
+                type='primary'
+                icon={<PrinterOutlined />}
+                hidden={viewEDetailsData && viewEDetailsData.employmentStatus === 'Resigned' ? true : false}
+              >
+                Print DTR
+              </Button>
+            </Popconfirm>,
+            <Popconfirm
+              placement='top'
+              title={`Proceed to TAG IT AS RESIGNED? Employee Id: ${viewEDetailsData.employeeId}, Employee Name: ${viewEDetailsData.firstName} ${viewEDetailsData.middleName} ${viewEDetailsData.lastName}`}
+              onConfirm={() => onProcessTagAsResigned(viewEDetailsData.employeeId)}
+              okText='Confirm'
+              cancelText='Cancel'
+            >
+              <Button
+                type='primary'
+                icon={<CheckOutlined />}
+                hidden={viewEDetailsData && viewEDetailsData.employmentStatus === 'Resigned' ? true : false}
+              >
+                Tag as Resigned
+              </Button>
+            </Popconfirm>,
+            <Button
+              type='primary'
+              icon={<RollbackOutlined />}
+              key='cancel'
+              onClick={() => {
                 setViewEDetailsModal(false);
-                setViewEDetailsData();
+                setViewEDetailsData('');
               }}
             >
               Cancel
@@ -491,7 +1145,18 @@ const Settings = (props) => {
                 </Col>
               </Row>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Employment Status
+                  </Title>
+                  <Input value={viewEDetailsData?.employmentStatus} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
@@ -502,7 +1167,7 @@ const Settings = (props) => {
                   </Title>
                   <Input value={viewEDetailsData?.role} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{

@@ -1,13 +1,13 @@
-const express = require("express");
+const express = require('express');
 const SignInRouter = new express.Router();
-const AdminModel = require("../../models/adminModel");
-const cipher = require("bcryptjs");
-const authenticateAdmin = require("../../middleware/authenticate");
+const AdminModel = require('../../models/adminModel');
+const cipher = require('bcryptjs');
+const authenticateAdmin = require('../../middleware/authenticate');
 
 // LOGIN
 
 // ADMIN LOGIN
-SignInRouter.post("/api/login", async (req, res) => {
+SignInRouter.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -15,11 +15,11 @@ SignInRouter.post("/api/login", async (req, res) => {
     if (userEmail) {
       const isMatch = await cipher.compare(password, userEmail.password);
       if (!isMatch) {
-        return res.status(401).json({ message: "Invalid Email or Password" });
+        return res.status(401).json({ message: 'Invalid Email or Password' });
       } else {
         const token = await userEmail.generateAuthToken();
 
-        res.cookie("UserCookie", token, {
+        res.cookie('UserCookie', token, {
           expire: new Date(Date.now + 604800000),
           httpOnly: true,
         });
@@ -31,7 +31,7 @@ SignInRouter.post("/api/login", async (req, res) => {
         return res.status(201).json({ status: 201, result });
       }
     } else {
-      return res.status(401).json({ message: "Invalid Email or Password" });
+      return res.status(401).json({ message: 'Invalid Email or Password' });
     }
   } catch (error) {
     console.log(error);
@@ -43,12 +43,12 @@ SignInRouter.post("/api/login", async (req, res) => {
 // VALIDATE
 
 // VALIDATE ADMIN LOGIN
-SignInRouter.get("/api/valid", authenticateAdmin, async (req, res) => {
+SignInRouter.get('/api/valid', authenticateAdmin, async (req, res) => {
   try {
     const validUser = await AdminModel.findOne({ _id: req.userId });
     return res.status(201).json({ validUser });
   } catch (error) {
-    console.log(error);
+    return res.status(401).json({ message: 'Unauthorized Access' });
   }
 });
 
@@ -57,13 +57,13 @@ SignInRouter.get("/api/valid", authenticateAdmin, async (req, res) => {
 // LOGOUT
 
 // LOGOUT ADMIN
-SignInRouter.get("/api/logout", authenticateAdmin, async (req, res) => {
+SignInRouter.get('/api/logout', authenticateAdmin, async (req, res) => {
   try {
     req.rootUser.tokens = req.rootUser.tokens.filter((currElem) => {
       return currElem != req.token;
     });
 
-    res.clearCookie("UserCookie", { path: "/" });
+    res.clearCookie('UserCookie', { path: '/' });
 
     req.rootUser.save();
 

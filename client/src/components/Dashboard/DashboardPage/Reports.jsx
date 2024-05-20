@@ -336,7 +336,7 @@ const Reports = (props) => {
             }}
           >
             <GlobalOutlined />
-            WWW.UCV.EDU.PH
+            WWW.ATTENDANCE.COM
           </div>
           <div
             style={{
@@ -349,7 +349,7 @@ const Reports = (props) => {
             }}
           >
             <PhoneOutlined />
-            377-4618 | 375-2913 | 377-4616 | 377-4617
+            +63 123 4567{' '}
           </div>
           <div>
             <h4>{`${loginData?.validUser?.firstName} ${loginData?.validUser?.lastName}`}</h4>
@@ -633,7 +633,7 @@ const Reports = (props) => {
                       marginTop: '20px',
                     }}
                   >
-                    Created
+                    Time-In/Time-Out Date
                   </Title>
                   <Input
                     value={new Date(viewTimesheetData?.created).toLocaleString()}

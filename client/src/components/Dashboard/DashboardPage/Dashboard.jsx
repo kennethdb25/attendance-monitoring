@@ -73,7 +73,7 @@ const Dashboard = (props) => {
             }}
           >
             <GlobalOutlined />
-            WWW.UCV.EDU.PH
+            WWW.ATTENDANCE.COM
           </div>
           <div
             style={{
@@ -86,7 +86,7 @@ const Dashboard = (props) => {
             }}
           >
             <PhoneOutlined />
-            377-4618 | 375-2913 | 377-4616 | 377-4617
+            +63 123 4567{' '}
           </div>
           <div>
             <h4>{`${loginData?.validUser?.firstName} ${loginData?.validUser?.lastName}`}</h4>

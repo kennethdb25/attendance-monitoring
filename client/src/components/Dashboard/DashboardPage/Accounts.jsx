@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useState } from 'react';
 import { LoginContext } from '../../../Context/Context';
-import { Col, Row, Table, Button, Space, Input, Form, message, Modal, Divider, Drawer, Typography, Select } from 'antd';
+import { Col, Row, Table, Button, Space, Input, Form, message, Modal, Divider, Drawer, Typography } from 'antd';
 import {
   SearchOutlined,
   ReadOutlined,
@@ -293,7 +293,7 @@ const Accounts = (props) => {
             }}
           >
             <GlobalOutlined />
-            WWW.UCV.EDU.PH
+            WWW.ATTENDANCE.COM
           </div>
           <div
             style={{
@@ -306,7 +306,7 @@ const Accounts = (props) => {
             }}
           >
             <PhoneOutlined />
-            377-4618 | 375-2913 | 377-4616 | 377-4617
+            +63 123 4567{' '}
           </div>
           <div>
             <h4>{`${loginData?.validUser?.firstName} ${loginData?.validUser?.lastName}`}</h4>
@@ -401,7 +401,7 @@ const Accounts = (props) => {
                 </Col>
               </Row>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
@@ -412,18 +412,7 @@ const Accounts = (props) => {
                   </Title>
                   <Input value={viewADetailsData?.lastName} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
-                  <Title
-                    level={5}
-                    style={{
-                      marginTop: '20px',
-                    }}
-                  >
-                    User Type
-                  </Title>
-                  <Input value={viewADetailsData?.userType} readOnly style={{ borderRadius: '10px' }} />
-                </Col>
-                <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
@@ -551,7 +540,7 @@ const Accounts = (props) => {
                   </Col>
                 </Row>
                 <Row gutter={12}>
-                  <Col xs={{ span: 24 }} md={{ span: 8 }}>
+                  <Col xs={{ span: 24 }} md={{ span: 12 }}>
                     <Form.Item
                       label='Employee ID'
                       name='employeeId'
@@ -572,7 +561,7 @@ const Accounts = (props) => {
                       <Input placeholder='Enter your employee id' />
                     </Form.Item>
                   </Col>
-                  <Col xs={{ span: 24 }} md={{ span: 8 }}>
+                  <Col xs={{ span: 24 }} md={{ span: 12 }}>
                     <Form.Item
                       label='Email'
                       name='email'
@@ -593,35 +582,6 @@ const Accounts = (props) => {
                       ]}
                     >
                       <Input placeholder='Enter your email' />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={{ span: 24 }} md={{ span: 8 }}>
-                    <Form.Item
-                      label='User Type'
-                      name='userType'
-                      labelCol={{
-                        span: 24,
-                        //offset: 2
-                      }}
-                      wrapperCol={{
-                        span: 24,
-                      }}
-                      hasFeedback
-                      rules={[
-                        {
-                          required: true,
-                          message: 'Please enter a user type',
-                        },
-                      ]}
-                    >
-                      <Select placeholder='Select a user type'>
-                        <Select.Option key='1' value='User'>
-                          User
-                        </Select.Option>
-                        <Select.Option key='2' value='Super Admin'>
-                          Super Admin
-                        </Select.Option>
-                      </Select>
                     </Form.Item>
                   </Col>
                 </Row>

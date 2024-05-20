@@ -9,6 +9,7 @@ import ROUTE from './Routes/Route';
 import LoginContent from './components/Login/LoginContent';
 import ForgotPassword from './components/ForgotPassword/ForgotPassword';
 import HomeDashboard from './components/Dashboard/Dashboard';
+import AttendanceDashboard from './components/Attendance/AttendanceDashboard';
 
 function App() {
   const [data, setData] = useState('');
@@ -97,6 +98,7 @@ function App() {
                 />
               }
             />
+            <Route path={ROUTE.ATTENDANCE} element={<AttendanceDashboard />} />
           </Routes>
         </>
       ) : (
