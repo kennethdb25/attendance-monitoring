@@ -1,33 +1,10 @@
 const express = require('express');
-const multer = require('multer');
 const AdminRegRouter = new express.Router();
 const AdminModel = require('../../models/adminModel');
 
-const imgconfig = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, './uploads');
-  },
-  filename: (req, file, callback) => {
-    callback(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const isImage = (req, file, callback) => {
-  if (file.mimetype.startsWith('image')) {
-    callback(null, true);
-  } else {
-    callback(new Error('Only image is allowed'));
-  }
-};
-
-const upload = multer({
-  storage: imgconfig,
-  fileFilter: isImage,
-});
-
 // register admin
 AdminRegRouter.post('/api/register', async (req, res) => {
-  const { employeeId, firstName, middleName, lastName, userType, email, password } = req.body;
+  const { employeeId, firstName, middleName, lastName, email, password } = req.body;
 
   // validate if employee id exist
   const validate = await AdminModel.findOne({ employeeId: employeeId });
@@ -41,7 +18,7 @@ AdminRegRouter.post('/api/register', async (req, res) => {
       firstName: firstName.toUpperCase(),
       middleName: middleName.toUpperCase(),
       lastName: lastName.toUpperCase(),
-      userType,
+      userType: 'Super Admin',
       acctStatus: 'Active',
       email,
       password,
