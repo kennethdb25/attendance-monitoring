@@ -49,6 +49,7 @@ const Reports = (props) => {
   const [reportDate, setReportDate] = useState([]);
   const [viewTimesheetData, setViewTimesheetData] = useState(null);
   const [viewTimesheetModal, setViewTimesheetModal] = useState(false);
+  const [targetedReport, setTargetedReport] = useState();
 
   const onViewTimesheetDetails = async (record, e) => {
     e.defaultPrevented = true;
@@ -283,6 +284,7 @@ const Reports = (props) => {
     const res = await data.json();
     if (res.status === 201) {
       form.resetFields();
+      setTargetedReport();
       message.success('Reports Successfully Generated and Ready to Download');
       loadMoreData();
     }
@@ -303,6 +305,10 @@ const Reports = (props) => {
 
   const handleDownload = (filename) => {
     window.open(`/api/report/download-csv?filename=${filename}`, '_blank');
+  };
+
+  const handleChange = (value) => {
+    setTargetedReport(value);
   };
 
   return (
@@ -420,7 +426,7 @@ const Reports = (props) => {
                     },
                   ]}
                 >
-                  <Select placeholder='Select a Report'>
+                  <Select placeholder='Select a Report' onChange={handleChange}>
                     {ReportData.map((value, index) => (
                       <Select.Option key={index} value={value.value}>
                         {value.name}
@@ -442,15 +448,22 @@ const Reports = (props) => {
                   hasFeedback
                 >
                   <Space direction='vertical' size={12}>
-                    <RangePicker
-                      showTime={{
-                        format: 'HH:mm',
-                      }}
-                      format='YYYY-MM-DD HH:mm'
-                      onChange={onChange}
-                      onOk={onOk}
-                    />
+                    <RangePicker format='YYYY-MM-DD' onChange={onChange} onOk={onOk} />
                   </Space>
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12} layout='vertical'>
+                <Form.Item
+                  name='employeeId'
+                  labelCol={{
+                    span: 24,
+                  }}
+                  wrapperCol={{
+                    span: 24,
+                  }}
+                  hasFeedback
+                >
+                  <Input placeholder='Enter Employee ID' hidden={targetedReport === 'individual' ? false : true} />
                 </Form.Item>
               </Col>
               <Row

@@ -8,11 +8,20 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 
 AddReportRouter.post('/api/report/generate', async (req, res) => {
-  const { report, start, end } = req.body;
-  let fileName = `${new Date().getTime()}-${report}-generated-report.csv`;
+  const { report, start, end, employeeId } = req.body;
+  let fileName;
+  switch (report) {
+    case 'individual':
+      fileName = `${employeeId}-time-in-and-time-out-${report}-generated-report-${new Date().getTime()}.csv`;
+      break;
+    default:
+      fileName = `${new Date().getTime()}-${report}-generated-report.csv`;
+      break;
+  }
   let pathFile = path.resolve(__dirname, '../../file-uploads');
   const startDate = new Date(start);
   const endDate = new Date(end);
+
   let dataReport;
   let csvWriter;
 
@@ -38,8 +47,35 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
         ],
         path: `${pathFile}/${fileName}`,
       });
+      break;
     case 'totalTimeInAndTimeOut':
       dataReport = await AttendanceModel.find({
+        created: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      });
+
+      csvWriter = createCsvWriter({
+        header: [
+          { id: 'employeeId', title: 'Employee ID' },
+          { id: 'firstName', title: 'Employee First Name' },
+          { id: 'middleName', title: 'Employee Middle Name' },
+          { id: 'lastName', title: 'Employee Last Name' },
+          { id: 'status', title: 'Status' },
+          { id: 'created', title: 'Time-in/Time-out Date' },
+          { id: 'role', title: 'Role' },
+          { id: 'department', title: 'Department' },
+          { id: 'email', title: 'Employee' },
+          { id: 'month', title: 'Month' },
+          { id: 'year', title: 'Year' },
+        ],
+        path: `${pathFile}/${fileName}`,
+      });
+      break;
+    default:
+      dataReport = await AttendanceModel.find({
+        employeeId,
         created: {
           $gte: startDate,
           $lte: endDate,
@@ -93,7 +129,20 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
             month: details.month,
             year: details.year,
           };
-          break;
+        case 'individual':
+          return {
+            employeeId: details.employeeId,
+            firstName: details.firstName,
+            middleName: details.middleName,
+            lastName: details.lastName,
+            status: details.status,
+            created: new Date(details.created).toLocaleString(),
+            role: details.role,
+            department: details.department,
+            email: details.email,
+            month: details.month,
+            year: details.year,
+          };
       }
     });
   await csvWriter.writeRecords(results);
