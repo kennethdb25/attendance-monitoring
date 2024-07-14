@@ -5,11 +5,20 @@ const EmployeeRouter = new express.Router();
 const EmployeeModel = require('../../models/employeeModel');
 
 const imgconfig = multer.diskStorage({
-  destination: (req, file, callback) => {
+  destination: async (req, file, callback) => {
     const folderName = file.originalname.split('-');
     const folderPath = `./client/public/labels/${folderName[0]}`;
-    fs.mkdirSync(folderPath, { recursive: true });
-    callback(null, folderPath);
+
+    const validate = await EmployeeModel.findOne({ employeeId: folderName[0] });
+    if (validate) {
+      new Error('Duplicate Entity');
+    }
+    try {
+      fs.mkdirSync(folderPath, { recursive: true });
+      callback(null, folderPath);
+    } catch (error) {
+      console.log('>>', error);
+    }
   },
   filename: (req, file, callback) => {
     const fileName = file.originalname.split('-');
@@ -31,14 +40,29 @@ const upload = multer({
 });
 
 EmployeeRouter.post('/api/add-employee', upload.array('photos', 12), async (req, res) => {
-  const { employeeId, firstName, middleName, lastName, role, department, email } = req.body;
+  const {
+    employeeId,
+    firstName,
+    middleName,
+    lastName,
+    role,
+    department,
+    email,
+    employerName,
+    employerAddress,
+    employerContact,
+  } = req.body;
 
   // validate if employee id exist
   const validate = await EmployeeModel.findOne({ employeeId: employeeId });
   if (validate) {
-    return res.status(422).json({ error: 'ID is already exists' });
+    return res.status(422).json({ error: 'Duplicate Entity' });
   }
 
+  const duplicateEmployee = await EmployeeModel.findOne({ firstName, middleName, lastName });
+  if (duplicateEmployee) {
+    return res.status(422).json({ error: 'Duplicate Entity' });
+  }
   try {
     const finalUser = new EmployeeModel({
       employeeId: employeeId.toUpperCase(),
@@ -50,6 +74,9 @@ EmployeeRouter.post('/api/add-employee', upload.array('photos', 12), async (req,
       role,
       department,
       email,
+      employerName: employerName.toUpperCase(),
+      employerAddress: employerAddress.toUpperCase(),
+      employerContact,
     });
 
     const storeData = await finalUser.save();
@@ -57,7 +84,51 @@ EmployeeRouter.post('/api/add-employee', upload.array('photos', 12), async (req,
     return res.status(201).json(storeData);
   } catch (error) {
     console.log(error);
-    return res.status(422).json(error);
+    return res.status(422).json({ error: 'Duplicate Entity' });
+  }
+});
+
+EmployeeRouter.patch('/api/update-employee/:_id', async (req, res) => {
+  try {
+    const id = req.params._id;
+    const {
+      employeeId,
+      firstName,
+      middleName,
+      lastName,
+      role,
+      department,
+      email,
+      employerName,
+      employerAddress,
+      employerContact,
+    } = req.body;
+
+    const getToUpdateEmployee = await EmployeeModel.findOne({
+      _id: id,
+    });
+
+    if (!getToUpdateEmployee) {
+      return res.status(404).json({ error: 'Something went wrong. Please try again later' });
+    }
+
+    if (employeeId) getToUpdateEmployee.employeeId = employeeId;
+    if (firstName) getToUpdateEmployee.firstName = firstName;
+    if (middleName) getToUpdateEmployee.middleName = middleName;
+    if (lastName) getToUpdateEmployee.lastName = lastName;
+    if (role) getToUpdateEmployee.role = role;
+    if (department) getToUpdateEmployee.department = department;
+    if (email) getToUpdateEmployee.email = email;
+    if (employerName) getToUpdateEmployee.employerName = employerName;
+    if (employerAddress) getToUpdateEmployee.employerAddress = employerAddress;
+    if (employerContact) getToUpdateEmployee.employerContact = employerContact;
+
+    const updatedData = await getToUpdateEmployee.save();
+
+    return res.status(201).json({ status: 201, updatedData });
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json(error);
   }
 });
 

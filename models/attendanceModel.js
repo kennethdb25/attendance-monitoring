@@ -17,20 +17,34 @@ const AttendanceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  status: {
-    type: String,
-    required: true,
+  timeData: {
+    timeInAM: {
+      type: String,
+    },
+    timeOutAM: {
+      type: String,
+    },
+    timeInPM: {
+      type: String,
+    },
+    timeOutPM: {
+      type: String,
+    },
+    totalHoursToday: {
+      type: Number,
+    },
   },
-  time: {
-    type: String,
-    required: true,
-  },
+
   created: {
     type: Date,
     required: true,
   },
   month: {
     type: String,
+    required: true,
+  },
+  monthCount: {
+    type: Number,
     required: true,
   },
   day: {
@@ -46,6 +60,18 @@ const AttendanceSchema = new mongoose.Schema({
     required: true,
   },
   department: {
+    type: String,
+    required: true,
+  },
+  employerName: {
+    type: String,
+    required: true,
+  },
+  employerAddress: {
+    type: String,
+    required: true,
+  },
+  employerContact: {
     type: String,
     required: true,
   },

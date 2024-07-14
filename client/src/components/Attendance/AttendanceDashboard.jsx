@@ -22,6 +22,7 @@ const AttendanceDashboard = () => {
   const [timeInDisabled, setTimeInDisabled] = useState(false);
   const [timeOutDisabled, setTimeOutDisabled] = useState(false);
   const [attendanceData, setAttendanceData] = useState('');
+  const [timeAndDate, setTimeAndDate] = useState('');
 
   const videoRef = useRef();
   // const canvasRef = useRef();
@@ -50,7 +51,6 @@ const AttendanceDashboard = () => {
   };
 
   const onProcessAttendance = async (employeeId, attendanceStats) => {
-    console.log(attendanceStats);
     const request = { employeeId: employeeId, status: attendanceStats };
 
     const data = await fetch('/api/add/attendance', {
@@ -80,7 +80,9 @@ const AttendanceDashboard = () => {
     // setAttendanceStatus('TIME-IN');
     setTimeout(() => {
       onPlayVideo('TIME-IN');
+      setAttendanceStatus('TIME-IN');
       setTimeOutDisabled(true);
+      setTimeAndDate(new Date().toLocaleString());
     }, 1000);
   };
 
@@ -90,7 +92,9 @@ const AttendanceDashboard = () => {
     // setAttendanceStatus('TIME-OUT');
     setTimeout(() => {
       onPlayVideo('TIME-OUT');
+      setAttendanceStatus('TIME-OUT');
       setTimeInDisabled(true);
+      setTimeAndDate(new Date().toLocaleString());
     }, 1000);
   };
 
@@ -136,7 +140,6 @@ const AttendanceDashboard = () => {
     // const labels = ["Kenneth", "Felipe"];
     return Promise.all(
       labels.map(async (label) => {
-        console.log(label);
         const descriptions = [];
         for (let i = 1; i <= 2; i++) {
           const img = await faceapi.fetchImage(`/labels/${label.employeeId}/${i}.png`);
@@ -173,20 +176,18 @@ const AttendanceDashboard = () => {
       return faceMatcher.findBestMatch(d.descriptor);
     });
     results.forEach((result, i) => {
-      console.log(result.label);
       const box = resizedDetections[i].detection.box;
       const drawBox = new faceapi.draw.DrawBox(box, {
         label: result,
       });
       // drawBox.draw(canvas);
       if (result.label !== 'unknown') {
-        console.log(attendanceStatus);
         onProcessAttendance(result.label, status);
         setTimeout(() => {
           // setAttendanceStatus();
           setTimeInDisabled(false);
           setTimeOutDisabled(false);
-          // setAttendanceStatus('');
+          setAttendanceStatus('');
         }, 5000);
       } else {
         message.error('Please try again and make sure to face in front of the camera!');
@@ -195,7 +196,7 @@ const AttendanceDashboard = () => {
           // setAttendanceStatus();
           setTimeInDisabled(false);
           setTimeOutDisabled(false);
-          // setAttendanceStatus('');
+          setAttendanceStatus('');
         }, 5000);
       }
     });
@@ -285,7 +286,7 @@ const AttendanceDashboard = () => {
                   <Input
                     value={attendanceData?.role}
                     prefix={<InfoCircleOutlined style={{ marginRight: '10px' }} />}
-                    placeholder='Role'
+                    placeholder='Designation'
                     style={{ borderRadius: '10px', marginTop: '15px' }}
                     readOnly
                   />
@@ -329,30 +330,6 @@ const AttendanceDashboard = () => {
                     </Button>
                   </div>
                 </Col>
-                {viewDeatailsImg ? (
-                  <>
-                    <Col xs={{ span: 12 }} md={{ span: 12 }} layout='vertical'>
-                      <Input
-                        // value={attendanceData.attendanceStatus}
-                        prefix={<UserOutlined style={{ marginRight: '10px' }} />}
-                        placeholder='Student ID'
-                        style={{ borderRadius: '10px', marginTop: '15px' }}
-                        readOnly
-                      />
-                    </Col>
-                    <Col xs={{ span: 12 }} md={{ span: 12 }} layout='vertical'>
-                      <Input
-                        // value={new Date(
-                        //   attendanceData.attendanceDate
-                        // ).toLocaleString()}
-                        prefix={<UserOutlined style={{ marginRight: '10px' }} />}
-                        placeholder='Student ID'
-                        style={{ borderRadius: '10px', marginTop: '15px' }}
-                        readOnly
-                      />
-                    </Col>
-                  </>
-                ) : null}
                 {!viewDeatailsImg ? (
                   <Col
                     xs={{ span: 24 }}
@@ -388,24 +365,30 @@ const AttendanceDashboard = () => {
                   </Col>
                 ) : null}
               </Row>
-              {viewDeatailsImg ? (
-                <>
-                  <Row
-                    gutter={12}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginTop: '10px',
-                    }}
-                  >
-                    <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
-                      <Image height={300} width={300} src={viewDeatailsImg} alt='Student Image' />
+              <Row>
+                {attendanceData ? (
+                  <>
+                    <Col xs={{ span: 12 }} md={{ span: 12 }} layout='vertical'>
+                      <Input
+                        value={attendanceStatus ? attendanceStatus : ''}
+                        prefix={<InfoCircleOutlined style={{ marginRight: '10px' }} />}
+                        placeholder='Attendance Status'
+                        style={{ borderRadius: '10px', marginTop: '15px' }}
+                        readOnly
+                      />
                     </Col>
-                  </Row>
-                </>
-              ) : null}
+                    <Col xs={{ span: 12 }} md={{ span: 12 }} layout='vertical'>
+                      <Input
+                        value={timeAndDate ? timeAndDate : ''}
+                        prefix={<CalendarOutlined style={{ marginRight: '10px' }} />}
+                        placeholder='Date and Time'
+                        style={{ borderRadius: '10px', marginTop: '15px' }}
+                        readOnly
+                      />
+                    </Col>
+                  </>
+                ) : null}
+              </Row>
             </Col>
           </Descriptions.Item>
           <Descriptions.Item label='SCANNER'>

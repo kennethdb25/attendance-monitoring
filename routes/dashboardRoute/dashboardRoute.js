@@ -13,8 +13,8 @@ DashboardRouter.get('/api/get-statistics', async (req, res) => {
     const totalTimeinToday = await AttendanceModel.aggregate([
       {
         $match: {
-          status: 'TIME-IN',
-          created: { $gt: new Date(`${getYear}-${getMonth}-${getToday}`) },
+          $or: [{ 'timeData.timeInAM': { $ne: null } }, { 'timeData.timeInPM': { $ne: null } }],
+          created: { $gte: new Date(`${getYear}-${getMonth}-${getToday}`) },
         },
       },
       {
@@ -30,8 +30,8 @@ DashboardRouter.get('/api/get-statistics', async (req, res) => {
     const totalTimeOutToday = await AttendanceModel.aggregate([
       {
         $match: {
-          status: 'TIME-OUT',
-          created: { $gt: new Date(`${getYear}-${getMonth}-${getToday}`) },
+          $or: [{ 'timeData.timeOutAM': { $ne: null } }, { 'timeData.timeOutPM': { $ne: null } }],
+          created: { $gte: new Date(`${getYear}-${getMonth}-${getToday}`) },
         },
       },
       {
@@ -44,26 +44,7 @@ DashboardRouter.get('/api/get-statistics', async (req, res) => {
       },
     ]);
 
-    const getAbsences = await AttendanceModel.aggregate([
-      {
-        $match: {
-          status: 'TIME-IN',
-          created: {
-            $gte: new Date(`${getYear}-${getMonth}-${getToday}`),
-          },
-        },
-      },
-      {
-        $group: {
-          _id: '$email',
-          uniqueValues: {
-            $addToSet: '$email',
-          },
-        },
-      },
-    ]);
-
-    const totalAbsencesYesterday = getTotalEmployee - getAbsences.length;
+    const totalAbsencesYesterday = getTotalEmployee - totalTimeinToday.length;
 
     return res
       .status(201)

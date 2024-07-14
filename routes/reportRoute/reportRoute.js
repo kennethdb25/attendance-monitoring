@@ -27,12 +27,7 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
 
   switch (report) {
     case 'employeeData':
-      dataReport = await EmployeeModel.find({
-        created: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-      });
+      dataReport = await EmployeeModel.find({ employmentStatus: 'Active' }).sort({ lastname: -1 });
 
       csvWriter = createCsvWriter({
         header: [
@@ -41,9 +36,12 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
           { id: 'middleName', title: 'Employee Middle Name' },
           { id: 'lastName', title: 'Employee Last Name' },
           { id: 'created', title: 'Created Date' },
-          { id: 'role', title: 'Role' },
+          { id: 'role', title: 'Designation' },
           { id: 'department', title: 'Department' },
           { id: 'email', title: 'Employee' },
+          { id: 'employerName', title: 'Company Name' },
+          { id: 'employerAddress', title: 'Company Address' },
+          { id: 'employerContact', title: 'Company Contact Details' },
         ],
         path: `${pathFile}/${fileName}`,
       });
@@ -54,7 +52,7 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
           $gte: startDate,
           $lte: endDate,
         },
-      });
+      }).sort({ lastname: -1 });
 
       csvWriter = createCsvWriter({
         header: [
@@ -62,13 +60,21 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
           { id: 'firstName', title: 'Employee First Name' },
           { id: 'middleName', title: 'Employee Middle Name' },
           { id: 'lastName', title: 'Employee Last Name' },
-          { id: 'status', title: 'Status' },
-          { id: 'created', title: 'Time-in/Time-out Date' },
-          { id: 'role', title: 'Role' },
-          { id: 'department', title: 'Department' },
           { id: 'email', title: 'Employee' },
+          { id: 'role', title: 'Designation' },
+          { id: 'department', title: 'Department' },
+          { id: 'employerName', title: 'Company Name' },
+          { id: 'employerAddress', title: 'Company Address' },
+          { id: 'employerContact', title: 'Company Contact Details' },
+          { id: 'created', title: 'Attendance Date' },
           { id: 'month', title: 'Month' },
+          { id: 'day', title: 'Day' },
           { id: 'year', title: 'Year' },
+          { id: 'timeInAM', title: 'TIME-IN AM' },
+          { id: 'timeOutAM', title: 'TIME-OUT AM' },
+          { id: 'timeInPM', title: 'TIME-IN PM' },
+          { id: 'timeOutPM', title: 'TIME-OUT PM' },
+          { id: 'totalHoursToday', title: 'Total Hours Today' },
         ],
         path: `${pathFile}/${fileName}`,
       });
@@ -80,7 +86,7 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
           $gte: startDate,
           $lte: endDate,
         },
-      });
+      }).sort({ created: 1 });
 
       csvWriter = createCsvWriter({
         header: [
@@ -88,13 +94,21 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
           { id: 'firstName', title: 'Employee First Name' },
           { id: 'middleName', title: 'Employee Middle Name' },
           { id: 'lastName', title: 'Employee Last Name' },
-          { id: 'status', title: 'Status' },
-          { id: 'created', title: 'Time-in/Time-out Date' },
-          { id: 'role', title: 'Role' },
-          { id: 'department', title: 'Department' },
           { id: 'email', title: 'Employee' },
+          { id: 'role', title: 'Designation' },
+          { id: 'department', title: 'Department' },
+          { id: 'employerName', title: 'Company Name' },
+          { id: 'employerAddress', title: 'Company Address' },
+          { id: 'employerContact', title: 'Company Contact Details' },
+          { id: 'created', title: 'Attendance Date' },
           { id: 'month', title: 'Month' },
+          { id: 'day', title: 'Day' },
           { id: 'year', title: 'Year' },
+          { id: 'timeInAM', title: 'TIME-IN AM' },
+          { id: 'timeOutAM', title: 'TIME-OUT AM' },
+          { id: 'timeInPM', title: 'TIME-IN PM' },
+          { id: 'timeOutPM', title: 'TIME-OUT PM' },
+          { id: 'totalHoursToday', title: 'Total Hours Today' },
         ],
         path: `${pathFile}/${fileName}`,
       });
@@ -114,6 +128,9 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
             role: details.role,
             department: details.department,
             email: details.email,
+            employerName: details.employerName,
+            employerAddress: details.employerAddress,
+            employerContact: details.employerContact,
           };
         case 'totalTimeInAndTimeOut':
           return {
@@ -121,13 +138,21 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
             firstName: details.firstName,
             middleName: details.middleName,
             lastName: details.lastName,
-            status: details.status,
-            created: new Date(details.created).toLocaleString(),
+            email: details.email,
             role: details.role,
             department: details.department,
-            email: details.email,
+            employerName: details.employerName,
+            employerAddress: details.employerAddress,
+            employerContact: details.employerContact,
+            created: new Date(details.created).toLocaleString(),
             month: details.month,
+            day: details.day,
             year: details.year,
+            timeInAM: details.timeData?.timeInAM ? details.timeData?.timeInAM : 'NO RECORD',
+            timeOutAM: details.timeData?.timeOutAM ? details.timeData?.timeOutAM : 'NO RECORD',
+            timeInPM: details.timeData?.timeInPM ? details.timeData?.timeInPM : 'NO RECORD',
+            timeOutPM: details.timeData?.timeOutPM ? details.timeData?.timeOutPM : 'NO RECORD',
+            totalHoursToday: details.timeData?.totalHoursToday ? details.timeData?.totalHoursToday : 'NO RECORD',
           };
         case 'individual':
           return {
@@ -135,13 +160,21 @@ AddReportRouter.post('/api/report/generate', async (req, res) => {
             firstName: details.firstName,
             middleName: details.middleName,
             lastName: details.lastName,
-            status: details.status,
-            created: new Date(details.created).toLocaleString(),
+            email: details.email,
             role: details.role,
             department: details.department,
-            email: details.email,
+            employerName: details.employerName,
+            employerAddress: details.employerAddress,
+            employerContact: details.employerContact,
+            created: new Date(details.created).toLocaleString(),
             month: details.month,
+            day: details.day,
             year: details.year,
+            timeInAM: details.timeData?.timeInAM ? details.timeData?.timeInAM : 'NO RECORD',
+            timeOutAM: details.timeData?.timeOutAM ? details.timeData?.timeOutAM : 'NO RECORD',
+            timeInPM: details.timeData?.timeInPM ? details.timeData?.timeInPM : 'NO RECORD',
+            timeOutPM: details.timeData?.timeOutPM ? details.timeData?.timeOutPM : 'NO RECORD',
+            totalHoursToday: details.timeData?.totalHoursToday ? details.timeData?.totalHoursToday : 'NO RECORD',
           };
       }
     });
@@ -180,28 +213,37 @@ AddReportRouter.get('/api/report/download-csv', async (req, res) => {
 });
 
 AddReportRouter.get('/api/print-dtr', async (req, res) => {
-  const { employeeId, startDate, year } = req.query;
-  const endDate = parseInt(startDate) + 1;
-
-  const dateNow = new Date(`${year}-${startDate}`);
-  const month = dateNow.toLocaleString('default', { month: 'long' });
+  const { employeeId, startDate, endDate } = req.query;
   const employee = await EmployeeModel.findOne({ employeeId });
+
+  const splitDate = startDate.split('-');
+  const year = splitDate[0];
+  const month = new Date(startDate).toLocaleString('default', { month: 'long' });
 
   if (employee) {
     const dtr = await AttendanceModel.find({
       employeeId,
-      created: { $gte: new Date(`${year}-${startDate}`), $lt: new Date(`${year}=${endDate}`) },
+      created: { $gte: new Date(startDate), $lte: new Date(endDate) },
     }).sort({ created: 1 });
 
     const result = dtr.map((x) => {
       return {
         day: x.day,
-        status: x.status,
-        time: x.time,
+        month: x.month,
+        year: x.year,
+        timeData: x.timeData,
       };
     });
-    console.log(result);
-    return res.status(200).json({ status: 200, body: { year, month, employee, result } });
+    let sum = 0;
+    const arr = dtr.map((x) => {
+      let total = 0;
+      total = total + x.timeData.totalHoursToday;
+      return total;
+    });
+    for (let i = 0; i < arr.length; i++) {
+      sum += arr[i];
+    }
+    return res.status(200).json({ status: 200, body: { year, month, employee, result, sum } });
   }
 });
 

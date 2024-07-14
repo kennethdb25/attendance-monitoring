@@ -51,6 +51,12 @@ const Reports = (props) => {
   const [viewTimesheetModal, setViewTimesheetModal] = useState(false);
   const [targetedReport, setTargetedReport] = useState();
 
+  const [sortedInfo, setSortedInfo] = useState({});
+  const handleChanges = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter);
+    setSortedInfo(sorter);
+  };
+
   const onViewTimesheetDetails = async (record, e) => {
     e.defaultPrevented = true;
     setViewTimesheetData(record);
@@ -166,64 +172,53 @@ const Reports = (props) => {
       title: 'Employee ID',
       dataIndex: 'employeeId',
       key: 'employeeId',
-      width: '10%',
+      width: '8%',
       ...getColumnSearchProps('employeeId', 'Employee ID'),
     },
     {
       title: 'Last Name',
       dataIndex: 'lastName',
       key: 'lastName',
-      width: '10%',
+      width: '8%',
       ...getColumnSearchProps('lastName', 'Last Name'),
+      sorter: (a, b) => a.lastName.length - b.lastName.length,
+      sortOrder: sortedInfo.columnKey === 'lastName' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
       title: 'First Name',
       dataIndex: 'firstName',
       key: 'firstName',
-      width: '10%',
+      width: '8%',
       ...getColumnSearchProps('firstName', 'First Name'),
+      sorter: (a, b) => a.firstName.length - b.firstName.length,
+      sortOrder: sortedInfo.columnKey === 'firstName' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
       title: 'Middle Name',
       dataIndex: 'middleName',
       key: 'middleName',
-      width: '10%',
+      width: '8%',
       ...getColumnSearchProps('middleName', 'Middle Name'),
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'role',
-      width: '10%',
-      filters: [
-        {
-          text: 'TIME-IN',
-          value: 'TIME-IN',
-        },
-        {
-          text: 'TIME-OUT',
-          value: 'TIME-OUT',
-        },
-      ],
-      onFilter: (value, record) => record.status.indexOf(value) === 0,
+      sorter: (a, b) => a.middleName.length - b.middleName.length,
+      sortOrder: sortedInfo.columnKey === 'middleName' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
       title: 'Date',
       dataIndex: 'created',
       key: 'created',
-      width: '15%',
+      width: '10%',
       render: (text, row) => <>{new Date(row['created']).toLocaleString()}</>,
+      sorter: (a, b) => new Date(a.created).getTime() - new Date(b.created).getTime(),
+      sortOrder: sortedInfo.columnKey === 'created' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
-      title: 'Role',
+      title: 'Designation',
       dataIndex: 'role',
       key: 'role',
-      width: '10%',
-    },
-    {
-      title: 'Department',
-      dataIndex: 'department',
-      key: 'department',
       width: '10%',
     },
     {
@@ -389,6 +384,7 @@ const Reports = (props) => {
               columns={columnEmployee}
               dataSource={timeSheetInfo}
               pagination={paginationTimeSheet}
+              onChange={handleChanges}
             />
           </Col>
         </Row>
@@ -446,6 +442,7 @@ const Reports = (props) => {
                     span: 24,
                   }}
                   hasFeedback
+                  hidden={targetedReport === 'employeeData' ? true : false}
                 >
                   <Space direction='vertical' size={12}>
                     <RangePicker format='YYYY-MM-DD' onChange={onChange} onOk={onOk} />
@@ -568,8 +565,11 @@ const Reports = (props) => {
           <Row>
             <Col xs={{ span: 0 }} md={{ span: 4 }}></Col>
             <Col xs={{ span: 24 }} md={{ span: 16 }}>
+              <Divider orientation='left' orientationMargin='0'>
+                <h3 style={{ marginTop: '20px' }}>PERSONAL INFORMATION</h3>
+              </Divider>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
@@ -580,6 +580,8 @@ const Reports = (props) => {
                   </Title>
                   <Input value={viewTimesheetData?.employeeId} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
+              </Row>
+              <Row gutter={12}>
                 <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
@@ -622,7 +624,7 @@ const Reports = (props) => {
                       marginTop: '20px',
                     }}
                   >
-                    Role
+                    Designation
                   </Title>
                   <Input value={viewTimesheetData?.role} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
@@ -646,7 +648,7 @@ const Reports = (props) => {
                       marginTop: '20px',
                     }}
                   >
-                    Time-In/Time-Out Date
+                    Attendance Creation Date
                   </Title>
                   <Input
                     value={new Date(viewTimesheetData?.created).toLocaleString()}
@@ -666,6 +668,47 @@ const Reports = (props) => {
                   <Input value={viewTimesheetData?.email} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
               </Row>
+              <Divider orientation='left' orientationMargin='0'>
+                <h3 style={{ marginTop: '20px' }}>COMPANY INFORMATION</h3>
+              </Divider>
+              <Row gutter={12}>
+                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Company Name
+                  </Title>
+                  <Input value={viewTimesheetData?.employerName} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Company Address
+                  </Title>
+                  <Input value={viewTimesheetData?.employerAddress} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Company Contact Details
+                  </Title>
+                  <Input value={viewTimesheetData?.employerContact} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+              </Row>
+              <Divider orientation='left' orientationMargin='0'>
+                <h3 style={{ marginTop: '20px' }}>ATTENDANCE INFORMATION</h3>
+              </Divider>
               <Row gutter={12}>
                 <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
@@ -674,9 +717,9 @@ const Reports = (props) => {
                       marginTop: '20px',
                     }}
                   >
-                    Status
+                    Day
                   </Title>
-                  <Input value={viewTimesheetData?.status} readOnly style={{ borderRadius: '10px' }} />
+                  <Input value={viewTimesheetData?.day} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
                 <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
@@ -699,6 +742,71 @@ const Reports = (props) => {
                     Year
                   </Title>
                   <Input value={viewTimesheetData?.year} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+              </Row>
+              <Row gutter={12}>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Time-In AM
+                  </Title>
+                  <Input value={viewTimesheetData?.timeData.timeInAM} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Time-Out AM
+                  </Title>
+                  <Input value={viewTimesheetData?.timeData.timeOutAM} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+              </Row>
+              <Row gutter={12}>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Time-In PM
+                  </Title>
+                  <Input value={viewTimesheetData?.timeData.timeInAM} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Time-Out PM
+                  </Title>
+                  <Input value={viewTimesheetData?.timeData.timeOutAM} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+              </Row>
+              <Row gutter={12}>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Total Hours
+                  </Title>
+                  <Input
+                    value={viewTimesheetData?.timeData.totalHoursToday}
+                    readOnly
+                    style={{ borderRadius: '10px' }}
+                  />
                 </Col>
               </Row>
             </Col>

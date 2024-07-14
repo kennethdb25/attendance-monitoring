@@ -36,12 +36,18 @@ import {
   CheckOutlined,
   PrinterOutlined,
   VerticalLeftOutlined,
+  EditOutlined,
+  CameraOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 import './style.css';
 import 'antd/dist/antd.min.css';
+import { EmployeeUpdateDetail } from '../AntdComponents/Drawer/drawer';
+import Camera from '../../Camera/Camera';
 
 const { Title } = Typography;
+const { RangePicker } = DatePicker;
 
 Chart.register(CategoryScale);
 
@@ -56,9 +62,25 @@ const Settings = (props) => {
   const [employeeVisible, setEmployeeVisible] = useState(false);
   const [monthModal, setMOnthModal] = useState(false);
   const [dtrModal, setDtrModal] = useState(false);
+  const [cameraModal, setCameraModal] = useState(false);
+
+  const [updateOpen, setUpdateOpen] = useState(false);
 
   const contentToPrint = useRef(null);
   const [dtrData, setDtrData] = useState();
+
+  const initialValues = {
+    employeeId: viewEDetailsData?.employeeId,
+    firstName: viewEDetailsData?.firstName,
+    middleName: viewEDetailsData?.middleName,
+    lastName: viewEDetailsData?.lastName,
+    department: viewEDetailsData?.department,
+    role: viewEDetailsData?.role,
+    email: viewEDetailsData?.email,
+    employerName: viewEDetailsData?.employerName,
+    employerAddress: viewEDetailsData?.employerAddress,
+    employerContact: viewEDetailsData?.employerContact,
+  };
 
   const { employeeInfo, getInventoryData } = props;
 
@@ -108,11 +130,9 @@ const Settings = (props) => {
 
   const onChange = async (date, dateString) => {
     console.log(dateString);
-    if (dateString) {
-      const rangeDate = dateString.split('-');
-
+    if (dateString.length > 0) {
       const data = await fetch(
-        `/api/print-dtr?employeeId=${viewEDetailsData.employeeId}&startDate=${rangeDate[1]}&year=${rangeDate[0]}`
+        `/api/print-dtr?employeeId=${viewEDetailsData.employeeId}&startDate=${dateString[0]}&endDate=${dateString[1]}`
       );
       const res = await data.json();
       setDtrData(res.body);
@@ -232,15 +252,20 @@ const Settings = (props) => {
     newdata.append('role', values.role);
     newdata.append('department', values.department);
     newdata.append('email', values.email);
+    newdata.append('employerName', values.employerName);
+    newdata.append('employerAddress', values.employerAddress);
+    newdata.append('employerContact', values.employerContact);
 
     const res = await fetch('/api/add-employee', {
       method: 'POST',
       body: newdata,
     });
     if (res.status === 201) {
-      message.success('Book Added Successfully');
+      message.success('Employee Added Successfully');
       getInventoryData();
       onCloseAdmin();
+    } else {
+      message.error(res.error ? res.error : 'Duplicate Entity');
     }
   };
 
@@ -249,27 +274,86 @@ const Settings = (props) => {
     form.resetFields();
   };
 
+  // update employee
+
+  const onCloseUpdate = () => {
+    setViewEDetailsData('');
+    setUpdateOpen(false);
+    form.resetFields();
+  };
+
+  const handleUpdateModal = () => {
+    setViewEDetailsModal(false);
+    setUpdateOpen(true);
+    form.resetFields();
+  };
+
+  const onOpenCamera = () => {
+    setCameraModal(true);
+  };
+
+  const onCloseCamera = () => {
+    setCameraModal(false);
+  };
+
+  const onFinishUpdate = async (values) => {
+    const data = await fetch(`/api/update-employee/${viewEDetailsData._id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(values),
+    });
+
+    const res = await data.json();
+    if (res.status === 201) {
+      message.success('Employee Information Updated Successfully');
+      onCloseUpdate();
+      getInventoryData();
+    }
+  };
+
+  const onFinishUpdateFailed = async (error) => {
+    console.error(error);
+  };
+
+  const onConfirmUpdate = () => {
+    form.submit();
+  };
+
+  const [sortedInfo, setSortedInfo] = useState({});
+  const handleChange = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter);
+    setSortedInfo(sorter);
+  };
+
   const columnEmployee = [
     {
       title: 'Employee ID',
       dataIndex: 'employeeId',
       key: 'employeeId',
-      width: '10%',
+      width: '8%',
       ...getColumnSearchProps('employeeId', 'Employee ID'),
     },
     {
       title: 'Last Name',
       dataIndex: 'lastName',
       key: 'lastName',
-      width: '10%',
+      width: '8%',
       ...getColumnSearchProps('lastName', 'Last Name'),
+      sorter: (a, b) => a.lastName.length - b.lastName.length,
+      sortOrder: sortedInfo.columnKey === 'lastName' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
       title: 'First Name',
       dataIndex: 'firstName',
       key: 'firstName',
-      width: '10%',
+      width: '8%',
       ...getColumnSearchProps('firstName', 'First Name'),
+      sorter: (a, b) => a.firstName.length - b.firstName.length,
+      sortOrder: sortedInfo.columnKey === 'firstName' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
       title: 'Middle Name',
@@ -277,31 +361,27 @@ const Settings = (props) => {
       key: 'middleName',
       width: '10%',
       ...getColumnSearchProps('middleName', 'Middle Name'),
+      sorter: (a, b) => a.middleName.length - b.middleName.length,
+      sortOrder: sortedInfo.columnKey === 'middleName' ? sortedInfo.order : null,
+      ellipsis: true,
     },
     {
-      title: 'Created Date',
-      dataIndex: 'created',
-      key: 'created',
-      width: '15%',
-      render: (text, row) => <>{new Date(row['created']).toLocaleString()}</>,
-    },
-    {
-      title: 'Role',
+      title: 'Designation',
       dataIndex: 'role',
       key: 'role',
-      width: '10%',
+      width: '9%',
     },
     {
       title: 'Department',
       dataIndex: 'department',
       key: 'department',
-      width: '10%',
+      width: '9%',
     },
     {
       title: 'Employment Status',
       dataIndex: 'employmentStatus',
       key: 'employmentStatus',
-      width: '10%',
+      width: '8%',
     },
     {
       title: (
@@ -487,6 +567,7 @@ const Settings = (props) => {
               key='adminTable'
               columns={columnEmployee}
               dataSource={employeeInfo}
+              onChange={handleChange}
               // pagination={paginationAdmin}
             />
           </Col>
@@ -526,8 +607,37 @@ const Settings = (props) => {
           ]}
         >
           <Space direction='vertical'>
-            <DatePicker onChange={onChange} picker='month' />
+            <RangePicker onChange={onChange} />
           </Space>
+        </Modal>
+
+        <Modal
+          key='camera'
+          title='CAMERA'
+          width={1000}
+          onCancel={() => {
+            onCloseCamera();
+          }}
+          open={cameraModal}
+          footer={[
+            <Button
+              key='Cancel Camera'
+              type='primary'
+              icon={<CloseCircleOutlined />}
+              onClick={() => {
+                onCloseCamera();
+              }}
+            >
+              Close Camera
+            </Button>,
+          ]}
+        >
+          <Row>
+            <Col xs={{ span: 0 }} md={{ span: 4 }}></Col>
+            <Col xs={{ span: 24 }} md={{ span: 16 }}>
+              <Camera />
+            </Col>
+          </Row>
         </Modal>
 
         <Modal
@@ -577,7 +687,7 @@ const Settings = (props) => {
                 <p class='name'>
                   Employee Name: {dtrData ? `${dtrData?.employee.firstName} ${dtrData?.employee.lastName}` : ''}
                 </p>
-                <p class='name'>Role: {dtrData ? `${dtrData?.employee.role}` : ''} </p>
+                <p class='name'>Designation: {dtrData ? `${dtrData?.employee.role}` : ''} </p>
                 <p class='civil_service_title2'>
                   <em>
                     For the month of {dtrData ? dtrData.month : ''}
@@ -596,427 +706,562 @@ const Settings = (props) => {
               <table border='1'>
                 <tr>
                   <th rowspan='2'>Day</th>
-                  <th colspan='1'>A.M.</th>
-                  <th colspan='1'>P.M.</th>
-                  <th colspan='2'>Undertime</th>
+                  <th colspan='2'>TIME (A.M.)</th>
+                  <th colspan='2'>TIME (P.M.)</th>
                   <th colspan='1'>Hours</th>
                 </tr>
                 <tr>
-                  <th>TIME-IN</th>
-                  <th>TIME-OUT</th>
-                  <th>TIME-IN</th>
-                  <th>TIME-OUT</th>
+                  <th>IN</th>
+                  <th>OUT</th>
+                  <th>IN</th>
+                  <th>OUT</th>
                   <th>Total</th>
                 </tr>
                 <tr>
-                  <th>1</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '1') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : ''}</td>;
+                      return (
+                        <>
+                          <th>1</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>2</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '2') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : ''}</td>;
+                      return (
+                        <>
+                          <th>2</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>3</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '3') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>3</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>4</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '4') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>4</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>5</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '5') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>5</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>6</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '6') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>6</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>7</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '7') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>7</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>8</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '8') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>8</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>9</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '9') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>9</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>10</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '10') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>10</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>11</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '11') return data;
                     })
                     .map((result) => {
-                      console.log(result);
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>11</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>12</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '12') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>12</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>13</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '13') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>13</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>14</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '14') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>14</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>15</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '15') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>15</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>16</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '16') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>16</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>17</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '17') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>17</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>18</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '18') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>18</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>19</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '19') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>19</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>20</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '20') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>20</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>21</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '21') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>21</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>22</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '22') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>22</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>23</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '23') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>23</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>24</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '24') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>24</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>25</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '25') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>25</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>26</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '26') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>26</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>27</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '27') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>27</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>28</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '28') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>28</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>29</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '29') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>29</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
-                  <th>30</th>
                   {dtrData?.result
                     .filter((data) => {
                       if (data.day === '30') return data;
                     })
                     .map((result) => {
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
+                      return (
+                        <>
+                          <th>30</th>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutAM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeInPM : ''}</td>
+                          <td style={{ fontSize: '8px' }}>{result ? result?.timeData.timeOutPM : ''}</td>
+                          <td style={{ fontSize: '10px' }}>{result ? result?.timeData.totalHoursToday : ''}</td>
+                        </>
+                      );
                     })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <th>31</th>
-                  {dtrData?.result
-                    .filter((data) => {
-                      if (data.day === '31') return data;
-                    })
-                    .map((result) => {
-                      console.log(result);
-                      return <td style={{ fontSize: '7px' }}>{result ? result?.time : 'N/A'}</td>;
-                    })}
-                  <td></td>
-                  <td></td>
-                  <td></td>
                 </tr>
                 <tr>
                   <th colspan='5'>
                     <div>Total</div>
                   </th>
+                  <td style={{ fontSize: '10px' }}>{dtrData && dtrData.sum ? dtrData.sum : 0}</td>
                 </tr>
               </table>
               <p>
@@ -1084,6 +1329,16 @@ const Settings = (props) => {
             </Popconfirm>,
             <Button
               type='primary'
+              icon={<EditOutlined />}
+              key='cancel'
+              onClick={() => {
+                handleUpdateModal();
+              }}
+            >
+              Update Employee Details
+            </Button>,
+            <Button
+              type='primary'
               icon={<RollbackOutlined />}
               key='cancel'
               onClick={() => {
@@ -1098,8 +1353,11 @@ const Settings = (props) => {
           <Row>
             <Col xs={{ span: 0 }} md={{ span: 4 }}></Col>
             <Col xs={{ span: 24 }} md={{ span: 16 }}>
+              <Divider orientation='left' orientationMargin='0'>
+                <h3 style={{ marginTop: '30px' }}>PERSONAL INFORMATION</h3>
+              </Divider>
               <Row gutter={12}>
-                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
+                <Col xs={{ span: 24 }} md={{ span: 12 }} layout='vertical'>
                   <Title
                     level={5}
                     style={{
@@ -1110,6 +1368,8 @@ const Settings = (props) => {
                   </Title>
                   <Input value={viewEDetailsData?.employeeId} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
+              </Row>
+              <Row gutter={12}>
                 <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                   <Title
                     level={5}
@@ -1163,7 +1423,7 @@ const Settings = (props) => {
                       marginTop: '20px',
                     }}
                   >
-                    Role
+                    Designation
                   </Title>
                   <Input value={viewEDetailsData?.role} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
@@ -1207,9 +1467,58 @@ const Settings = (props) => {
                   <Input value={viewEDetailsData?.email} readOnly style={{ borderRadius: '10px' }} />
                 </Col>
               </Row>
+              <Divider orientation='left' orientationMargin='0'>
+                <h3 style={{ marginTop: '30px' }}>COMPANY INFORMATION</h3>
+              </Divider>
+              <Row gutter={12}>
+                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Employer Name
+                  </Title>
+                  <Input value={viewEDetailsData?.employerName} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Employer Address
+                  </Title>
+                  <Input value={viewEDetailsData?.employerAddress} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+                <Col xs={{ span: 24 }} md={{ span: 24 }} layout='vertical'>
+                  <Title
+                    level={5}
+                    style={{
+                      marginTop: '20px',
+                    }}
+                  >
+                    Employer Contact Details
+                  </Title>
+                  <Input value={viewEDetailsData?.employerContact} readOnly style={{ borderRadius: '10px' }} />
+                </Col>
+              </Row>
             </Col>
           </Row>
         </Modal>
+
+        {/* Employee Update */}
+        <EmployeeUpdateDetail
+          onCloseUpdate={onCloseUpdate}
+          updateOpen={updateOpen}
+          form={form}
+          onFinishUpdate={onFinishUpdate}
+          onFinishUpdateFailed={onFinishUpdateFailed}
+          initialValues={initialValues}
+          onConfirmUpdate={onConfirmUpdate}
+        />
 
         <Drawer
           key='addingEmployee'
@@ -1235,6 +1544,9 @@ const Settings = (props) => {
               <Button type='primary' icon={<RollbackOutlined />} onClick={onCloseAdmin}>
                 Cancel
               </Button>
+              <Button type='primary' icon={<CameraOutlined />} onClick={onOpenCamera}>
+                Open Camera
+              </Button>
             </div>,
           ]}
         >
@@ -1253,6 +1565,14 @@ const Settings = (props) => {
             <Row>
               {/* <Col xs={{ span: 0 }} md={{ span: 4 }}></Col> */}
               <Col xs={{ span: 24 }} md={{ span: 24 }}>
+                <Title
+                  level={5}
+                  style={{
+                    marginTop: '20px',
+                  }}
+                >
+                  PERSONAL INFORMATION
+                </Title>
                 <Row gutter={12}>
                   <Col xs={{ span: 24 }} md={{ span: 8 }} layout='vertical'>
                     <Form.Item
@@ -1347,7 +1667,7 @@ const Settings = (props) => {
 
                   <Col xs={{ span: 24 }} md={{ span: 8 }}>
                     <Form.Item
-                      label='Role'
+                      label='Designation'
                       name='role'
                       labelCol={{
                         span: 24,
@@ -1360,11 +1680,11 @@ const Settings = (props) => {
                       rules={[
                         {
                           required: true,
-                          message: 'Please input your role!',
+                          message: 'Please input your designation!',
                         },
                       ]}
                     >
-                      <Input placeholder='Enter your role' />
+                      <Input placeholder='Enter your designation' />
                     </Form.Item>
                   </Col>
                   <Col xs={{ span: 24 }} md={{ span: 8 }}>
@@ -1414,6 +1734,99 @@ const Settings = (props) => {
                       <Input placeholder='Enter your email' />
                     </Form.Item>
                   </Col>
+                </Row>
+                <Title
+                  level={5}
+                  style={{
+                    marginTop: '20px',
+                  }}
+                >
+                  COMPANY INFORMATION
+                </Title>
+                <Row gutter={12}>
+                  <Col xs={{ span: 24 }} md={{ span: 24 }}>
+                    <Form.Item
+                      label='Employer Name'
+                      name='employerName'
+                      labelCol={{
+                        span: 24,
+                        //offset: 2
+                      }}
+                      wrapperCol={{
+                        span: 24,
+                      }}
+                      hasFeedback
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please input your Employer Name!',
+                        },
+                      ]}
+                    >
+                      <Input placeholder='Enter your Company Name' />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={{ span: 24 }} md={{ span: 24 }}>
+                    <Form.Item
+                      label='Employer Address'
+                      name='employerAddress'
+                      labelCol={{
+                        span: 24,
+                        //offset: 2
+                      }}
+                      wrapperCol={{
+                        span: 24,
+                      }}
+                      hasFeedback
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please input your Employer Address!',
+                        },
+                      ]}
+                    >
+                      <Input placeholder='Enter your Company Address' />
+                    </Form.Item>
+                  </Col>
+
+                  <Col xs={{ span: 24 }} md={{ span: 12 }}>
+                    <Form.Item
+                      label='Employer Contact Details'
+                      name='employerContact'
+                      labelCol={{
+                        span: 24,
+                        //offset: 2
+                      }}
+                      wrapperCol={{
+                        span: 24,
+                      }}
+                      hasFeedback
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please input your Employer Contact Details!',
+                        },
+                        {
+                          pattern: /^[0-9]*$/,
+                          message: 'Should be a number',
+                        },
+                        { min: 11 },
+                        { max: 11 },
+                      ]}
+                    >
+                      <Input placeholder='Enter your company 11-digits phone number' />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Title
+                  level={5}
+                  style={{
+                    marginTop: '20px',
+                  }}
+                >
+                  UPLOAD IMAGE
+                </Title>
+                <Row gutter={12}>
                   <Col xs={{ span: 24 }} md={{ span: 12 }}>
                     <Form.Item
                       label='Employee Image 1'

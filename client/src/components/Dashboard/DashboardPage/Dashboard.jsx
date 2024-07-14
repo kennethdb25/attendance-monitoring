@@ -18,7 +18,7 @@ const Dashboard = (props) => {
   const { loginData } = useContext(LoginContext);
 
   const [chartData, setChartData] = useState({
-    labels: graphInfo.attendanceGraphTimeOut.map((datas) => datas._id),
+    labels: graphInfo.attendanceGraphTimeOut?.map((datas) => datas._id),
     datasets: [
       {
         label: 'TOAL TIME-OUT',

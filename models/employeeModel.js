@@ -29,6 +29,18 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  employerName: {
+    type: String,
+    required: true,
+  },
+  employerAddress: {
+    type: String,
+    required: true,
+  },
+  employerContact: {
+    type: String,
+    required: true,
+  },
   department: {
     type: String,
     required: true,
