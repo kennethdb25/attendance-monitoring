@@ -138,17 +138,21 @@ const AttendanceDashboard = () => {
 
   function getLabeledFaceDescriptions() {
     // const labels = ["Kenneth", "Felipe"];
-    return Promise.all(
-      labels.map(async (label) => {
-        const descriptions = [];
-        for (let i = 1; i <= 2; i++) {
-          const img = await faceapi.fetchImage(`/labels/${label.employeeId}/${i}.png`);
-          const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-          descriptions.push(detections.descriptor);
-        }
-        return new faceapi.LabeledFaceDescriptors(label.employeeId, descriptions);
-      })
-    );
+    if (labels.length > 0) {
+      return Promise.all(
+        labels.map(async (label) => {
+          const descriptions = [];
+          for (let i = 1; i <= 2; i++) {
+            const img = await faceapi.fetchImage(`/labels/${label.employeeId}/${i}.png`);
+            const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+            descriptions.push(detections.descriptor);
+          }
+          return new faceapi.LabeledFaceDescriptors(label.employeeId, descriptions);
+        })
+      );
+    } else {
+      message.error('Please try again and make sure to face in front of the camera!');
+    }
   }
 
   const onPlayVideo = async (status) => {
