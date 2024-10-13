@@ -1,9 +1,4 @@
 {
-  "browser": {
-    "fs": false,
-    "os": false,
-    "path": false
-  },
   "name": "client",
   "version": "0.1.0",
   "private": true,
@@ -45,7 +40,6 @@
     "styled-components": "^6.1.0"
   },
   "scripts": {
-    "postBuild":"npm install --force && npm run build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -68,5 +62,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "browser": {
+    "fs": false
   }
 }
