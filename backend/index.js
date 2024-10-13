@@ -27,6 +27,10 @@ app.use(AddReportRouter);
 app.use(AttendanceRouter);
 app.use(DashboardRouter);
 
+app.get("/", (req, res) => {
+  res.json("Hello");
+});
+
 app.use("/file-uploads", express.static("./file-uploads"));
 
 if (process.env.NODE_ENV === "production") {
