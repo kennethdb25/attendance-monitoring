@@ -1,4 +1,9 @@
 {
+  "browser": {
+    "fs": false,
+    "os": false,
+    "path": false
+  },
   "name": "client",
   "version": "0.1.0",
   "private": true,
@@ -38,11 +43,6 @@
     "slick-carousel": "^1.8.1",
     "source-map-loader": "^4.0.1",
     "styled-components": "^6.1.0"
-  },
-  "browser": {
-    "fs": false,
-    "os": false,
-    "path": false
   },
   "scripts": {
     "start": "react-scripts start",
