@@ -145,7 +145,7 @@ const AttendanceDashboard = () => {
           for (let i = 1; i <= 2; i++) {
             const img = await faceapi.fetchImage(`/labels/${label.employeeId}/${i}.png`);
             const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-            descriptions.push(detections.descriptor);
+            descriptions.push(detections.descriptors);
           }
           return new faceapi.LabeledFaceDescriptors(label.employeeId, descriptions);
         })
